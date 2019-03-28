@@ -1,0 +1,27 @@
+---
+openapi: 3.0.1
+info:
+  title: restingest
+  description: restingest generic endpoints
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  version: 1.0.0
+servers:
+- url: /
+paths:
+  /generic:
+    post:
+      summary: Store some data
+      description: Store the posted data
+      operationId: generic_post
+      requestBody:
+        description: A new `devicesLocations` to be created.
+        content:
+          application/json: {}
+        required: true
+      responses:
+        201:
+          description: Successful response.
+      x-codegen-request-body-name: body
+      x-openapi-router-controller: receive_http_store_blob_trigger_func.openapi_server.controllers.default_controller
