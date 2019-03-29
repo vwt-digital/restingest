@@ -12,14 +12,6 @@ pool:
 jobs:
 - job: 'Test'
   steps:
-  - 
-dependsOn: Job_3
-pool:
-  name: Hosted Ubuntu 1604
-variables:
-  environment: 'd'
-
-steps:
   - task: UsePythonVersion@0
     displayName: 'Use Python 3.6'
     inputs:
@@ -46,6 +38,7 @@ steps:
     condition: succeededOrFailed()
 
 - job: 'Deploy'
+  dependsOn: 'Test'
   steps:
   - script: |
       cd functions
