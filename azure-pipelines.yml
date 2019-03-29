@@ -9,7 +9,6 @@ trigger:
 pool:
   vmImage: 'Ubuntu-16.04'
 
-jobs:
 - job: 'Test'
   steps:
   - task: UsePythonVersion@0
