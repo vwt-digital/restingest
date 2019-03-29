@@ -6,10 +6,10 @@
 trigger:
 - develop
 
-pool:
-  vmImage: 'Ubuntu-16.04'
-
+jobs:
 - job: 'Test'
+  pool:
+    vmImage: 'Ubuntu-16.04'
   steps:
   - task: UsePythonVersion@0
     displayName: 'Use Python 3.6'
@@ -37,6 +37,8 @@ pool:
     condition: succeededOrFailed()
 
 - job: 'Deploy'
+  pool:
+    vmImage: 'Ubuntu-16.04'
   dependsOn: 'Test'
   steps:
   - script: |
