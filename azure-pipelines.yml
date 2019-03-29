@@ -9,12 +9,49 @@ trigger:
 pool:
   vmImage: 'Ubuntu-16.04'
 
-steps:
-- script: |
-    cd functions
-    zip -r ../deploy.zip .
-  displayName: 'Create deployment artifact'
+jobs:
+- job: 'Test'
+  steps:
+  - 
+dependsOn: Job_3
+pool:
+  name: Hosted Ubuntu 1604
+variables:
+  environment: 'd'
 
-- task: PublishPipelineArtifact@0
-  inputs:
-    targetPath: deploy.zip
+steps:
+  - task: UsePythonVersion@0
+    displayName: 'Use Python 3.6'
+    inputs:
+      versionSpec: '>= 3.6'
+
+  - script: |
+     pip3 install tox
+     tox
+    workingDirectory: functions
+    displayName: 'Run tests'
+
+  - task: PublishTestResults@2
+    displayName: 'Publish Test Results'
+    inputs:
+      testResultsFiles: 'functions/test-*.xml'
+    condition: succeededOrFailed()
+
+  - task: PublishCodeCoverageResults@1
+    displayName: 'Publish code coverage'
+    inputs:
+      codeCoverageTool: Cobertura
+      summaryFileLocation: 'functions/cov-nosetests.xml'
+      reportDirectory: 'functions/cov-nosetests-html'
+    condition: succeededOrFailed()
+
+- job: 'Deploy'
+  steps:
+  - script: |
+      cd functions
+      zip -r ../deploy.zip .
+    displayName: 'Create deployment artifact'
+
+  - task: PublishPipelineArtifact@0
+    inputs:
+      targetPath: deploy.zip

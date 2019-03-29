@@ -37,6 +37,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                                  mimetype="application/problem+json",
                                  status_code=problem['status'])
 
-    result = connexion_app.handle_request(url=req.url, method=req.method, headers=req.headers, data=json.dumps(req_body))
+    result = connexion_app.handle_request(url='/generic', method=req.method, headers=req.headers.__http_headers__,
+                                          data=req_body)
 
     return func.HttpResponse(result.data, status_code=result.status_code)
