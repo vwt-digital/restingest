@@ -3,7 +3,7 @@ import json
 
 import azure.functions as func
 
-from receive_http_store_blob_trigger_func.openapi_server import connexion_app
+from openapi_server import connexion_app
 
 
 def main(req: func.HttpRequest) -> func.HttpResponse:

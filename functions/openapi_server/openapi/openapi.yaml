@@ -24,4 +24,4 @@ paths:
         201:
           description: Successful response.
       x-codegen-request-body-name: body
-      x-openapi-router-controller: receive_http_store_blob_trigger_func.openapi_server.controllers.default_controller
+      x-openapi-router-controller: openapi_server.controllers.default_controller
