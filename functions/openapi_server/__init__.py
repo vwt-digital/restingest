@@ -19,7 +19,7 @@ class BaseApp:
             current_app.base_path = config.BASE_PATH
             current_app.cloudstorage = []
 
-            if config.AZURE_STORAGE_ACCOUNT:
+            if hasattr(config, 'AZURE_STORAGE_ACCOUNT'):
                 current_app.cloudstorage.append(AzureCloudStorage(config.AZURE_STORAGE_ACCOUNT,
                                                                   config.AZURE_STORAGE_KEY,
                                                                   config.AZURE_STORAGE_CONTAINER))
