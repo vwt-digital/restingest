@@ -1,7 +1,11 @@
+import sys
+import os.path
 import logging
 import json
 
 import azure.functions as func
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'venv/lib/python3.6/site-packages')))
 
 from openapi_server import connexion_app
 
