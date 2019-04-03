@@ -26,8 +26,8 @@ class TestDefaultController(BaseTestCase):
             headers=headers,
             data=json.dumps(body),
             content_type='application/json')
-        self.assert200(response,
-                       'Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(response.status_code, 201,
+                         'Response body is : ' + response.data.decode('utf-8'))
 
 
 

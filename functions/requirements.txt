@@ -1,4 +1,5 @@
 azure.functions
+azure.storage.blob
 connexion == 2.0.2
 flask_testing==0.6.1
 swagger-ui-bundle == 0.0.2
