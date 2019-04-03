@@ -1,13 +1,9 @@
 import logging
 import json
-import sys
-import os.path
 
 import azure.functions as func
 
 from openapi_server import connexion_app
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'venv/Lib/site-packages')))
 
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
