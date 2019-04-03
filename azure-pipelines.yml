@@ -17,6 +17,7 @@ jobs:
       versionSpec: '>= 3.6'
 
   - script: |
+     cp config.example.py config.py
      pip3 install tox
      tox
     workingDirectory: functions
