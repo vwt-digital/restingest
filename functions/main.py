@@ -37,7 +37,10 @@ def receive_http_store_blob_trigger_func(req):
         response.headers['Content-Type'] = 'application/problem+json',
         return response
 
-    result = connexion_app.handle_request(url='/generic', method=req.method, headers=req.headers,
-                                          data=req_body)
+    cpHeaders = {}
 
-    return make_response(jsonify(result.data), result.status_code)
+    for key, value in req.headers:
+        cpHeaders[key] = value
+
+    return connexion_app.handle_request(url=req.path, method=req.method, headers=cpHeaders,
+                                        data=req_body)
