@@ -4,6 +4,7 @@ import config
 
 from flask import current_app
 from azurecloudstorage import AzureCloudStorage
+from googlecloudstorage import GoogleCloudStorage
 
 logging.basicConfig(level=logging.INFO)
 
@@ -23,6 +24,8 @@ class BaseApp:
                 current_app.cloudstorage.append(AzureCloudStorage(config.AZURE_STORAGE_ACCOUNT,
                                                                   config.AZURE_STORAGE_KEY,
                                                                   config.AZURE_STORAGE_CONTAINER))
+            if hasattr(config, 'GOOGLE_STORAGE_BUCKET'):
+                current_app.cloudstorage.append(GoogleCloudStorage(config.GOOGLE_STORAGE_BUCKET))
 
     def get_cxnapp(self):
         return self.cxnapp

@@ -3,6 +3,9 @@
 #   AZURE_STORAGE_KEY = '***'
 #   AZURE_STORAGE_CONTAINER = 'containername'
 
+# Uncomment and specify to store to Google cloud storage
+#   GOOGLE_STORAGE_BUCKET = 'storagebucketname'
+
 BASE_PATH = 'base/path'
 
 # Uncomment to activate timer download from/to specified url
