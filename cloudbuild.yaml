@@ -10,7 +10,7 @@ steps:
   args: 
   - 'tar'
   - '-zcvf' 
-  - '../deploy.tgz'
+  - '../deploy-${BRANCH_NAME}.tgz'
   - '.'
   dir: 'functions'
 
@@ -31,4 +31,4 @@ steps:
 artifacts:
   objects:
     location: 'gs://$PROJECT_ID-artifacts-stg'
-    paths: ['deploy.tgz']
+    paths: ['deploy-${BRANCH_NAME}.tgz']
