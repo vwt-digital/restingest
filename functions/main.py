@@ -8,7 +8,7 @@ from openapi_server import connexion_app
 
 def receive_http_store_blob_trigger_func(req):
     logging.basicConfig(level=logging.info)
-    logging.info('Python HTTP trigger function processed a request.')
+    logging.info('Python HTTP trigger function processed a request from %s.', req.path)
 
     logging.info(req.headers)
 
