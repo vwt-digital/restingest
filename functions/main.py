@@ -41,6 +41,3 @@ def receive_http_store_blob_trigger_func(req):
                                           data=req_body)
 
     return make_response(jsonify(result.data), result.status_code)
-
-
-receive_http_store_blob_trigger_func({})
