@@ -8,5 +8,6 @@
 
 BASE_PATH = 'base/path'
 
-# Uncomment to activate timer download from/to specified url
-GET_HTTP_STORE_BLOB_TIMER_GET_URL = 'http://get.from/endpoint'
+# Uncomment to activate timer download function from specified url
+#   GET_URLS = {'url1': 'https://get.from/url1',
+#               'url2': 'https://get.from/url2'}

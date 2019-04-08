@@ -34,9 +34,7 @@ class BaseApp:
     # This can be used to wrap the Connexion handler in a cloud lambda/function.
     def handle_request(self, url, method, headers, data, content_type='application/json'):
         if method == 'POST':
-            logging.debug("Doing post %s %s", url, method)
-            logging.debug("headers %s", headers)
-            logging.debug("data %s", data)
+            logging.debug("Doing post to [%s]", url)
             return self.get_cxnapp().app.test_client().open(path=url,
                                                             method=method,
                                                             headers=headers,
