@@ -62,7 +62,7 @@ See above
 #### Usage of GET timer
 The GET timer will get the data from the geturl specified in the correspinding entry of GET_URLS in [config.py](functions/config.py) and store it in a blob on the path `<BASE_PATH>/<storepath>/yyyy/mm/dd/yyyymmddThhiiss.json`.
 
-## Using a custom OpenAPI server
+## Using a custom OpenAPI specification
 A more restrictive format of the JSON documents can be applied by overwriting the default [openapi.yaml](functions/openapi_server/openapi/openapi.yaml). All endpoints should be handled by the _generic_post_ handler.
 For example, to store pet documents from the [OpenAPI petstore example](https://github.com/OAI/OpenAPI-Specification/blob/master/examples/v3.0/petstore.yaml), use the below specification. This will only accept POSTs with a JSON body containing an id field and name field in the correct format, as specified in the OpenAPI specification.
 ~~~
