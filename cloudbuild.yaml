@@ -4,7 +4,7 @@ steps:
   args:
   - '-c'
   - |
-    gsutil ls gs://$PROJECT_ID-artifacts-stg || gsutil mp -p $PROJECT_ID -c regional -l europe-west1 gs://$PROJECT_ID-artifacts-stg
+    gsutil ls gs://$PROJECT_ID-artifacts-stg || gsutil mb -p $PROJECT_ID -c regional -l europe-west1 gs://$PROJECT_ID-artifacts-stg
 
 - name: 'alpine:latest'
   args: 
