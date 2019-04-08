@@ -80,4 +80,4 @@ def get_http_store_blob_trigger_func(request):
         return response
 
     return connexion_app.handle_request(url=request.args['storepath'], method='POST',
-                                          headers={'Content-Type': 'application/json'}, data=data)
+                                        headers={'Content-Type': 'application/json'}, data=data)
