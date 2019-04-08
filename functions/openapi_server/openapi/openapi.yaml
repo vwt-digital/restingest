@@ -16,7 +16,7 @@ paths:
       description: Store the posted data
       operationId: generic_post
       requestBody:
-        description: A new `devicesLocations` to be created.
+        description: A new JSON document to be stored.
         content:
           application/json: {}
         required: true

@@ -6,6 +6,7 @@
 # Uncomment and specify to store to Google cloud storage
 #   GOOGLE_STORAGE_BUCKET = 'storagebucketname'
 
+# Base path of blobs stored
 BASE_PATH = 'base/path'
 
 # Uncomment to activate timer download function from specified url
