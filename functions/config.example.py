@@ -9,6 +9,9 @@
 # Base path of blobs stored
 BASE_PATH = 'base/path'
 
+# Uncomment to activate incoming data filtering
+# PI_FILTER = []
+
 # Uncomment to activate timer download function from specified url
 #    URL_COLLECTIONS = {
 #        'url1': {

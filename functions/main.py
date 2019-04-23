@@ -2,13 +2,11 @@ import logging
 import requests
 import config
 import json
-import datetime
 
 from flask import jsonify
 from flask import make_response
 
 from openapi_server import connexion_app
-from google.cloud import storage
 
 
 def handle_http_store_blob_trigger_func(request):
