@@ -10,7 +10,8 @@
 BASE_PATH = 'base/path'
 
 # Uncomment to activate incoming data filtering
-# PI_FILTER = []
+# PII_FILTER = []
+# PII_FILTER_PATH = '/permanent'
 
 # Uncomment to activate timer download function from specified url
 #    URL_COLLECTIONS = {
@@ -47,6 +48,10 @@ BASE_PATH = 'base/path'
 #                'credentials': '<base64encoded>'  # bas64 encoded
 #            },
 #            'headers': {},
+#            'pii-headers': {
+#                'x-pii-filter': ['MedewerkerNaam', 'MedewerkerNummer'],
+#                'x-pii-filter-path': 'permanent'
+#            },
 #            'body': {
 #                'type': 'application/json',
 #                'content': {

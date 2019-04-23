@@ -29,7 +29,7 @@ paths:
     post:
       summary: Store some data
       description: Store the posted data
-      operationId: generic_post2
+      operationId: urencnt_post
       requestBody:
         description: A new JSON document to be stored.
         content:
@@ -44,7 +44,7 @@ paths:
     post:
       summary: Store some data
       description: Store the posted data
-      operationId: generic_post3
+      operationId: urenover_post
       requestBody:
         description: A new JSON document to be stored.
         content:
@@ -59,7 +59,7 @@ paths:
     post:
       summary: Store some data
       description: Store the posted data
-      operationId: generic_post4
+      operationId: urendesc_post
       requestBody:
         description: A new JSON document to be stored.
         content:
