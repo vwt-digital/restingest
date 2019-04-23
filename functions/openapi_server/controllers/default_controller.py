@@ -21,3 +21,11 @@ def generic_post(body):
 
 def generic_post2(body):
     return generic_post(body)
+
+
+def generic_post3(body):
+    return generic_post(body)
+
+
+def generic_post4(body):
+    return generic_post(body)

@@ -10,5 +10,71 @@
 BASE_PATH = 'base/path'
 
 # Uncomment to activate timer download function from specified url
-#   GET_URLS = {'url1': 'https://get.from/url1',
-#               'url2': 'https://get.from/url2'}
+#    URL_COLLECTIONS = {
+#        'url1': {
+#            'method': 'GET',
+#            'url': 'https://get.from/url1'
+#        },
+#        'urencnt': {
+#            'method': 'POST',
+#            'url': 'https://ometaframework-test.vwtelecom.com:50556/api/ADMrecord/GetAllMultiRecord',
+#            'authorization': {
+#                'type': 'Basic',
+#                'credentials': '<base64encoded>' # bas64 encoded
+#            },
+#           'headers': {},
+#            'body': {
+#                'type': 'application/json',
+#                'content': {
+#                   "server": "swvwtv021",
+#                   "view": "vwListGeplandeUrenregelsCount_L2V35_NS",
+#                   "port": "2005",
+#                   "Object": "VWTUren",
+#                   "Context": {
+#                        "AantalUrenAchteruit": "40"
+#                    }
+#                }
+#            }
+#        },
+#        'urenover': {
+#            'method': 'POST',
+#            'url': 'https://ometaframework-test.vwtelecom.com:50556/api/ADMrecord/GetAllMultiRecord',
+#            'authorization': {
+#                'type': 'Basic',
+#                'credentials': '<base64encoded>'  # bas64 encoded
+#            },
+#            'headers': {},
+#            'body': {
+#                'type': 'application/json',
+#                'content': {
+#                    "server": "swvwtv021",
+#                    "view": "vwListGeplandeUrenregels_L2V35_NS",
+#                    "port": "2005",
+#                    "Object": "VWTUren",
+#                    "Context": {
+#                        "AantalUrenAchteruit": "10000",
+#                        "Skip": "0",
+#                        "Take": "100"
+#                    }
+#                }
+#            }
+#        },
+#        'urendesc': {
+#            'method': 'POST',
+#            'url': 'https://ometaframework-test.vwtelecom.com:50556/api/ADMrecord/GetAllMultiRecord',
+#            'authorization': {
+#                'type': 'Basic',
+#                'credentials': '<base64encoded>'  # bas64 encoded
+#            },
+#            'headers': {},
+#            'body': {
+#                'type': 'application/json',
+#                'content': {
+#                    "server": "swvwtv021",
+#                    "view": "vwListUrenCategorien_L2V35_NS",
+#                    "port": "2005",
+#                    "Object": "VWTUren",
+#                }
+#            }
+#        }
+#    }

@@ -25,3 +25,48 @@ paths:
           description: Successful response.
       x-codegen-request-body-name: body
       x-openapi-router-controller: openapi_server.controllers.default_controller
+  /urencnt:
+    post:
+      summary: Store some data
+      description: Store the posted data
+      operationId: generic_post2
+      requestBody:
+        description: A new JSON document to be stored.
+        content:
+          application/json: {}
+        required: true
+      responses:
+        201:
+          description: Successful response.
+      x-codegen-request-body-name: body
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /urenover:
+    post:
+      summary: Store some data
+      description: Store the posted data
+      operationId: generic_post3
+      requestBody:
+        description: A new JSON document to be stored.
+        content:
+          application/json: {}
+        required: true
+      responses:
+        201:
+          description: Successful response.
+      x-codegen-request-body-name: body
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /urendesc:
+    post:
+      summary: Store some data
+      description: Store the posted data
+      operationId: generic_post4
+      requestBody:
+        description: A new JSON document to be stored.
+        content:
+          application/json: {}
+        required: true
+      responses:
+        201:
+          description: Successful response.
+      x-codegen-request-body-name: body
+      x-openapi-router-controller: openapi_server.controllers.default_controller
