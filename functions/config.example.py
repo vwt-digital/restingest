@@ -9,10 +9,6 @@
 # Base path of blobs stored
 BASE_PATH = 'base/path'
 
-# Uncomment to activate incoming data filtering
-# PII_FILTER = []
-# PII_FILTER_PATH = '/permanent'
-
 # Uncomment to activate timer download function from specified url
 #    URL_COLLECTIONS = {
 #        'url1': {
