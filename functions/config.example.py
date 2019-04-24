@@ -22,11 +22,7 @@ BASE_PATH = 'base/path'
 #                'type': 'Basic',
 #                'credentials': '<base64encoded>' # bas64 encoded
 #            },
-#           'headers': {},
-#            'pii-headers': {
-#                'x-pii-filter': ['MedewerkerNaam', 'MedewerkerNummer'],
-#                'x-pii-filter-path': 'permanent'
-#            },
+#            'headers': {},
 #            'body': {
 #                'type': 'application/json',
 #                'content': {

@@ -13,8 +13,8 @@ def handle_http_store_blob_trigger_func(request):
     logging.basicConfig(level=logging.info)
     logging.info('Python HTTP handle_http_store_blob_trigger_func function processed a request from %s.', request.path)
 
-    logging.debug(request.headers)
-    logging.debug(request.args)
+    logging.info(request.headers)
+    logging.info(request.args)
 
     if not request.args or 'geturl' not in request.args or request.args['geturl'] not in config.URL_COLLECTIONS:
         problem = {'type': 'MissingParameter',
@@ -25,7 +25,7 @@ def handle_http_store_blob_trigger_func(request):
         return response
 
     request_def = config.URL_COLLECTIONS[request.args['geturl']]
-    logging.debug('Strored definition {}'.format(request_def))
+    logging.info('Strored definition {}'.format(request_def))
     if request_def['method'] == 'GET':
         return get_http_store_blob_trigger_func(request)
     elif request_def['method'] == 'POST':
@@ -38,6 +38,9 @@ def handle_http_store_blob_trigger_func(request):
             cpHeaders['Authorization'] = request_def['authorization']['type'] + ' '\
                                          + request_def['authorization']['credentials']
 
+        logging.info(cpHeaders)
+        logging.info(request_def['url'])
+        logging.info(data)
         data_response = requests.post(request_def['url'], data=json.dumps(data), headers=cpHeaders)
         if data_response.status_code != requests.codes.ok:
             logging.error(data_response.headers)
@@ -51,16 +54,8 @@ def handle_http_store_blob_trigger_func(request):
             response.headers['Content-Type'] = 'application/problem+json',
             return response
 
-        original_data = data_response.json()
-        process_headers = {'Content-Type': 'application/json'}
-        if 'pii-headers' in request_def:
-            process_headers['x-pii-filter'] = json.dumps(request_def['pii-headers']['x-pii-filter'])
-            process_headers['x-pii-filter-path'] = request_def['pii-headers']['x-pii-filter-path']
-
-        logging.info(process_headers)
         return connexion_app.handle_request(url=request.args['geturl'], method='POST',
-                                            headers=process_headers, data=original_data)
-
+                                            headers={'Content-Type': 'application/json'}, data=data_response.json())
         # storage_client = storage.Client()
         # bucket = storage_client.bucket(config.GOOGLE_STORAGE_BUCKET)
         # now = datetime.datetime.utcnow()
