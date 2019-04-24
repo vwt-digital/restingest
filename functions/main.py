@@ -24,6 +24,14 @@ def handle_http_store_blob_trigger_func(request):
         response.headers['Content-Type'] = 'application/problem+json',
         return response
 
+    if not request.args or 'storepath' not in request.args:
+        problem = {'type': 'MissingParameter',
+                   'title': 'Expected parameter storepath not found',
+                   'status': 400}
+        response = make_response(jsonify(problem), 400)
+        response.headers['Content-Type'] = 'application/problem+json',
+        return response
+
     request_def = config.URL_COLLECTIONS[request.args['geturl']]
     logging.info('Strored definition {}'.format(request_def))
     if request_def['method'] == 'GET':
@@ -54,23 +62,8 @@ def handle_http_store_blob_trigger_func(request):
             response.headers['Content-Type'] = 'application/problem+json',
             return response
 
-        return connexion_app.handle_request(url=request.args['geturl'], method='POST',
+        return connexion_app.handle_request(url=request.args['storepath'], method='POST',
                                             headers={'Content-Type': 'application/json'}, data=data_response.json())
-        # storage_client = storage.Client()
-        # bucket = storage_client.bucket(config.GOOGLE_STORAGE_BUCKET)
-        # now = datetime.datetime.utcnow()
-        # timestamp = '%04d%02d%02dT%02d%02d%02dZ' % (now.year, now.month, now.day,
-        #                                             now.hour, now.minute, now.second)
-        # destinationpath = '%s%s/%d/%d/%d/%s.json' % ('link2', request.args['geturl'], now.year, now.month, now.day,
-        #                                              timestamp)
-        # blob = bucket.blob(destinationpath)
-        # blob.upload_from_string(json.dumps(data_response.json()))
-        # result = {'type': 'OK',
-        #            'title': 'OK',
-        #            'status': 200}
-        # response = make_response(jsonify(result), 200)
-        # response.headers['Content-Type'] = 'application/json',
-        # return response
     else:
         problem = {'type': 'InvalidRequest',
                    'title': 'Invalid Request',
