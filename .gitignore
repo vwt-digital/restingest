@@ -1,0 +1,13 @@
+config.py
+node_modules/
+package-lock.json
+venv/
+.idea/
+.tox/
+*.egg-info/
+__pycache__/
+.coverage
+cov-nosetests-html/
+cov-*.xml
+test-*.xml
+

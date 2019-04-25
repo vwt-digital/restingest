@@ -1,0 +1,52 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- develop
+
+jobs:
+- job: 'Test'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  steps:
+  - task: UsePythonVersion@0
+    displayName: 'Use Python 3.6'
+    inputs:
+      versionSpec: '>= 3.6'
+
+  - script: |
+     cp config.example.py config.py
+     pip3 install tox
+     tox
+    workingDirectory: functions
+    displayName: 'Run tests'
+
+  - task: PublishTestResults@2
+    displayName: 'Publish Test Results'
+    inputs:
+      testResultsFiles: 'functions/test-*.xml'
+    condition: succeededOrFailed()
+
+  - task: PublishCodeCoverageResults@1
+    displayName: 'Publish code coverage'
+    inputs:
+      codeCoverageTool: Cobertura
+      summaryFileLocation: 'functions/cov-nosetests.xml'
+      reportDirectory: 'functions/cov-nosetests-html'
+    condition: succeededOrFailed()
+
+- job: 'Deploy'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  dependsOn: 'Test'
+  steps:
+  - script: |
+      cd functions
+      zip -r ../deploy.zip .
+    displayName: 'Create deployment artifact'
+
+  - task: PublishPipelineArtifact@0
+    inputs:
+      targetPath: deploy.zip
