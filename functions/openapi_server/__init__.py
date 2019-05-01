@@ -3,6 +3,7 @@ import connexion
 import config
 
 from flask import current_app
+from flask_cors import CORS
 from azurecloudstorage import AzureCloudStorage
 from googlecloudstorage import GoogleCloudStorage
 
@@ -16,6 +17,7 @@ class BaseApp:
     def __init__(self):
         self.cxnapp = connexion.App(__name__, specification_dir='openapi/')
         self.cxnapp.add_api('openapi.yaml')
+        CORS(self.cxnapp.app)
         with self.cxnapp.app.app_context():
             current_app.base_path = config.BASE_PATH
             current_app.cloudstorage = []
