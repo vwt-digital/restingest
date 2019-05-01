@@ -77,7 +77,9 @@ def receive_http_store_blob_trigger_func(request):
     logging.basicConfig(level=logging.info)
     logging.info('Python HTTP receive_http_store_blob_trigger_func function processed a request from %s.', request.path)
 
-    logging.info(request.headers)
+    logging.debug(request.headers)
+
+    req_body = None
 
     if request.method == "POST":
         media_type = ""
