@@ -79,30 +79,31 @@ def receive_http_store_blob_trigger_func(request):
 
     logging.info(request.headers)
 
-    media_type = ""
+    if request.method == "POST":
+        media_type = ""
 
-    try:
-        media_type = request.headers['Content-Type']
-    except KeyError:
-        pass
+        try:
+            media_type = request.headers['Content-Type']
+        except KeyError:
+            pass
 
-    if not media_type or media_type != 'application/json':
-        problem = {'type': 'InvalidMediaType',
-                   'title': 'Unsupported media type, expected application/json',
-                   'status': 415}
-        response = make_response(jsonify(problem), 415)
-        response.headers['Content-Type'] = 'application/problem+json',
-        return response
+        if not media_type or media_type != 'application/json':
+            problem = {'type': 'InvalidMediaType',
+                       'title': 'Unsupported media type, expected application/json',
+                       'status': 415}
+            response = make_response(jsonify(problem), 415)
+            response.headers['Content-Type'] = 'application/problem+json',
+            return response
 
-    try:
-        req_body = request.get_json(silent=True)
-    except ValueError:
-        problem = {'type': 'InvalidJSON',
-                   'title': 'Invalid JSON',
-                   'status': 400}
-        response = make_response(jsonify(problem), 415)
-        response.headers['Content-Type'] = 'application/problem+json',
-        return response
+        try:
+            req_body = request.get_json(silent=True)
+        except ValueError:
+            problem = {'type': 'InvalidJSON',
+                       'title': 'Invalid JSON',
+                       'status': 400}
+            response = make_response(jsonify(problem), 415)
+            response.headers['Content-Type'] = 'application/problem+json',
+            return response
 
     cpHeaders = {}
 
