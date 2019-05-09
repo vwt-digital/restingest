@@ -137,7 +137,7 @@ def get_http_store_blob_trigger_func(request):
         return response
 
     try:
-        data = requests.get(config.URL_COLLECTIONS[request.args['geturl']]['url']).json()
+        data = requests.get(config.URL_COLLECTIONS[request.args['geturl']]['url'], timeout=300).json()
     except requests.exceptions.ConnectionError:
         logging.warning('Error retrieving data from [%s]', config.URL_COLLECTIONS[request.args['geturl']]['url'])
         problem = {'type': 'InternalConfigError',
