@@ -39,7 +39,7 @@ class BaseApp:
     # This can be used to wrap the Connexion handler in a cloud lambda/function.
     def handle_request(self, url, method, headers, data, content_type='application/json'):
         if not self.cxnapp.app.__pii_filter_def__:
-            raw = self.cxnapp.app.test_client().open(path='/openapi.json', method='GET', content_type='application/json')
+            raw = self.cxnapp.app.test_client().open(path='/openapi.json', method='GET', content_type='application/json').json
             if 'x-pii-filter' in raw:
                 self.cxnapp.app.__pii_filter_def__ = raw['x-pii-filter']
             else:
