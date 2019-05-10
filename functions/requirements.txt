@@ -1,6 +1,6 @@
 azure.functions
 azure.storage.blob
-google.cloud.storage
+google-cloud-storage
 connexion == 2.0.2
 flask_testing==0.6.1
 flask_cors == 3.0.7

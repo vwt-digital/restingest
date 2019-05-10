@@ -19,6 +19,7 @@ class BaseApp:
         self.cxnapp.add_api('openapi.yaml')
         CORS(self.cxnapp.app)
         with self.cxnapp.app.app_context():
+            current_app.__pii_filter_def__ = None
             current_app.base_path = config.BASE_PATH
             current_app.cloudstorage = []
 
@@ -28,6 +29,8 @@ class BaseApp:
                                                                   config.AZURE_STORAGE_CONTAINER))
             if hasattr(config, 'GOOGLE_STORAGE_BUCKET'):
                 current_app.cloudstorage.append(GoogleCloudStorage(config.GOOGLE_STORAGE_BUCKET))
+                if hasattr(config, 'GOOGLE_LOG_BUCKET'):
+                    current_app.cloudstorage.append(GoogleCloudStorage(config.GOOGLE_LOG_BUCKET))
 
     def get_cxnapp(self):
         return self.cxnapp
@@ -35,6 +38,12 @@ class BaseApp:
     # handle_request uses the flask test_client to call the handler for a http request
     # This can be used to wrap the Connexion handler in a cloud lambda/function.
     def handle_request(self, url, method, headers, data, content_type='application/json'):
+        if not self.cxnapp.app.__pii_filter_def__:
+            raw = self.cxnapp.app.test_cliend().open(path='/openapi.json', method='GET', content_type='application/json')
+            if 'x-pii-filter' in raw:
+                self.cxnapp.app.__pii_filter_def__ = raw['x-pii-filter']
+            else:
+                self.cxnapp.app.__pii_filter_def__ = []
         if method == 'POST' or method == 'OPTIONS':
             logging.debug("Doing [%s] to [%s]", method, url)
             return self.get_cxnapp().app.test_client().open(path=url,
