@@ -35,7 +35,7 @@ class BaseApp:
     # handle_request uses the flask test_client to call the handler for a http request
     # This can be used to wrap the Connexion handler in a cloud lambda/function.
     def handle_request(self, url, method, headers, data, content_type='application/json'):
-        if method == 'POST' or method == 'OPTIONS':
+        if method == 'POST' or method == 'OPTIONS' or method == 'GET':
             logging.debug("Doing [%s] to [%s]", method, url)
             return self.get_cxnapp().app.test_client().open(path=url,
                                                             method=method,
