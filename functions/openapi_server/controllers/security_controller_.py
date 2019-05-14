@@ -11,9 +11,12 @@ if hasattr(config, 'OAUTH_JWKS_URL'):
 
 def refine_token_info(token_info):
     if token_info and 'appid' in token_info:
-        for appid_info in config.OAUTH_APPID:
-            if token_info['appid'] == appid_info['appid']:
-                token_info['scopes'] = appid_info['scopes']
+        try:
+            for appid_info in config.OAUTH_APPID:
+                if token_info['appid'] == appid_info['appid']:
+                    token_info['scopes'] = appid_info['scopes']
+        except NameError:
+            pass
     return token_info
 
 
