@@ -1,10 +1,13 @@
 import logging
+import os
+
 import requests
 import config
 import json
 
 from flask import jsonify
 from flask import make_response
+from requests_oauthlib import OAuth1
 
 from openapi_server import connexion_app
 
@@ -15,6 +18,13 @@ def handle_http_store_blob_trigger_func(request):
 
     logging.info(request.headers)
     logging.info(request.args)
+    consumer_key = os.environ.get('CONSUMER_KEY', 'Please set a MoreApp Consumer Key')
+    consumer_secret = os.environ.get('CONSUMER_SECRET', 'Please set a MoreApp Consumer Secret')
+    moreapp_auth = OAuth1(
+        consumer_key,
+        consumer_secret,
+        signature_method='HMAC-SHA1'
+    )
 
     if not request.args or 'geturl' not in request.args or request.args['geturl'] not in config.URL_COLLECTIONS:
         problem = {'type': 'MissingParameter',
@@ -34,6 +44,7 @@ def handle_http_store_blob_trigger_func(request):
 
     request_def = config.URL_COLLECTIONS[request.args['geturl']]
     logging.info('Strored definition {}'.format(request_def))
+
     if request_def['method'] == 'GET':
         return get_http_store_blob_trigger_func(request)
     elif request_def['method'] == 'POST':
@@ -42,6 +53,7 @@ def handle_http_store_blob_trigger_func(request):
         cpHeaders = request_def['headers']
         cpHeaders['Content-Type'] = media_type
 
+        moreapp_config = request_def['authorisation']['type'] == 'MoreApp'
         if 'authorization' in request_def:
             cpHeaders['Authorization'] = request_def['authorization']['type'] + ' '\
                                          + request_def['authorization']['credentials']
@@ -49,7 +61,19 @@ def handle_http_store_blob_trigger_func(request):
         logging.info(cpHeaders)
         logging.info(request_def['url'])
         logging.info(data)
-        data_response = requests.post(request_def['url'], data=json.dumps(data), headers=cpHeaders)
+
+        data_response = requests.post(
+            request_def['url'],
+            data=json.dumps(data),
+            headers=cpHeaders,
+        ) if not moreapp_config else \
+            requests.post(
+                request_def['url'],
+                auth=moreapp_auth,
+                data=json.dumps(data),
+                json=json.dumps(data),
+                headers=cpHeaders
+            )
         if data_response.status_code != requests.codes.ok:
             logging.error(data_response.headers)
             logging.error(data_response.status_code)
