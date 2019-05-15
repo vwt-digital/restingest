@@ -1,5 +1,4 @@
 import logging
-import os
 
 import requests
 import config
@@ -18,11 +17,10 @@ def handle_http_store_blob_trigger_func(request):
 
     logging.info(request.headers)
     logging.info(request.args)
-    consumer_key = os.environ.get('CONSUMER_KEY', 'Please set a MoreApp Consumer Key')
-    consumer_secret = os.environ.get('CONSUMER_SECRET', 'Please set a MoreApp Consumer Secret')
-    moreapp_auth = OAuth1(
-        consumer_key,
-        consumer_secret,
+
+    oauth_1 = OAuth1(
+        config.CONSUMER_KEY,
+        config.CONSUMER_SECRET,
         signature_method='HMAC-SHA1'
     )
 
@@ -62,18 +60,21 @@ def handle_http_store_blob_trigger_func(request):
         logging.info(request_def['url'])
         logging.info(data)
 
-        data_response = requests.post(
-            request_def['url'],
-            data=json.dumps(data),
-            headers=cpHeaders,
-        ) if not moreapp_config else \
-            requests.post(
+        if moreapp_config:
+            data_response = requests.post(
                 request_def['url'],
-                auth=moreapp_auth,
+                auth=oauth_1,
                 data=json.dumps(data),
                 json=json.dumps(data),
                 headers=cpHeaders
             )
+        else:
+            data_response = requests.post(
+                request_def['url'],
+                data=json.dumps(data),
+                headers=cpHeaders,
+            )
+
         if data_response.status_code != requests.codes.ok:
             logging.error(data_response.headers)
             logging.error(data_response.status_code)
