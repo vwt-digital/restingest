@@ -18,12 +18,6 @@ def handle_http_store_blob_trigger_func(request):
     logging.info(request.headers)
     logging.info(request.args)
 
-    oauth_1 = OAuth1(
-        config.CONSUMER_KEY,
-        config.CONSUMER_SECRET,
-        signature_method='HMAC-SHA1'
-    )
-
     if not request.args or 'geturl' not in request.args or request.args['geturl'] not in config.URL_COLLECTIONS:
         problem = {'type': 'MissingParameter',
                    'title': 'Expected parameter geturl not found',
@@ -61,6 +55,12 @@ def handle_http_store_blob_trigger_func(request):
         logging.info(data)
 
         if moreapp_config:
+            oauth_1 = OAuth1(
+                config.CONSUMER_KEY,
+                config.CONSUMER_SECRET,
+                signature_method='HMAC-SHA1'
+            )
+
             data_response = requests.post(
                 request_def['url'],
                 auth=oauth_1,
