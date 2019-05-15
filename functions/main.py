@@ -53,7 +53,7 @@ def handle_http_store_blob_trigger_func(request):
         cpHeaders = request_def['headers']
         cpHeaders['Content-Type'] = media_type
 
-        moreapp_config = request_def['authorisation']['type'] == 'MoreApp'
+        moreapp_config = request_def['authorization']['type'] == 'MoreApp'
         if 'authorization' in request_def:
             cpHeaders['Authorization'] = request_def['authorization']['type'] + ' '\
                                          + request_def['authorization']['credentials']
