@@ -182,7 +182,7 @@ def get_http_store_blob_trigger_func(request):
                                         headers={'Content-Type': 'application/json'}, data=data)
 
 
-def get_csv_survey_blob_func():
+def get_csv_survey_blob_func(request):
     """
     This aims to create a csv file from all
     the registrations that have been downloaded
