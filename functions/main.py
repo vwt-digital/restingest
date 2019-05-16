@@ -9,6 +9,8 @@ from flask import make_response
 from requests_oauthlib import OAuth1
 
 from openapi_server import connexion_app
+from surveys.csv import handle_csv
+from surveys.csv.helpers import get_presentable_surveys
 
 
 def handle_http_store_blob_trigger_func(request):
@@ -87,8 +89,12 @@ def handle_http_store_blob_trigger_func(request):
             response.headers['Content-Type'] = 'application/problem+json',
             return response
 
-        return connexion_app.handle_request(url=request.args['storepath'], method='POST',
-                                            headers={'Content-Type': 'application/json'}, data=data_response.json())
+        return connexion_app.handle_request(
+            url=request.args['storepath'],
+            method='POST',
+            headers={'Content-Type': 'application/json'},
+            data=get_presentable_surveys(data_response.json()['elements']) if moreapp_config else data_response.json()
+            )
     else:
         problem = {'type': 'InvalidRequest',
                    'title': 'Invalid Request',
@@ -174,3 +180,13 @@ def get_http_store_blob_trigger_func(request):
 
     return connexion_app.handle_request(url=request.args['storepath'], method='POST',
                                         headers={'Content-Type': 'application/json'}, data=data)
+
+
+def get_csv_survey_blob_func():
+    """
+    This aims to create a csv file from all
+    the registrations that have been downloaded
+    """
+
+    bucket = config.GOOGLE_STORAGE_BUCKET
+    return handle_csv.create_survey_csv(bucket)
