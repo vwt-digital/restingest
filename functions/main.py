@@ -47,8 +47,8 @@ def handle_http_store_blob_trigger_func(request):
         cpHeaders = request_def['headers']
         cpHeaders['Content-Type'] = media_type
 
-        moreapp_config = request_def['authorization']['type'] == 'MoreApp'
-        if 'authorization' in request_def and not moreapp_config:
+        oauth1_config = request_def['authorization']['type'] == 'OAuth1'
+        if 'authorization' in request_def and not oauth1_config:
             cpHeaders['Authorization'] = request_def['authorization']['type'] + ' '\
                                          + request_def['authorization']['credentials']
 
@@ -56,7 +56,7 @@ def handle_http_store_blob_trigger_func(request):
         logging.info(request_def['url'])
         logging.info(data)
 
-        if moreapp_config:
+        if oauth1_config:
             oauth_1 = OAuth1(
                 config.CONSUMER_KEY,
                 config.CONSUMER_SECRET,
@@ -93,7 +93,7 @@ def handle_http_store_blob_trigger_func(request):
             url=request.args['storepath'],
             method='POST',
             headers={'Content-Type': 'application/json'},
-            data=get_presentable_surveys(data_response.json()['elements']) if moreapp_config else data_response.json()
+            data=get_presentable_surveys(data_response.json()['elements']) if oauth1_config else data_response.json()
             )
     else:
         problem = {'type': 'InvalidRequest',
