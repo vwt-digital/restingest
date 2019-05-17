@@ -25,12 +25,10 @@ def get_batch_surveys(bucket_name):
     storage_client = storage.Client(os.environ.get('PROJECT', 'Specified environment variable is not set.'))
 
     bucket = storage_client.get_bucket(bucket_name)
-    surveys = {}
-    blobs = bucket.list_blobs()
-    content = json.loads(blobs[:-1].download_as_string(), encoding="utf-8")
-    logger.info('Downloaded Survey String', content)
-    surveys["latest"] = dict(content)
-    return surveys
+
+    latest = list(bucket.list_blobs())[-1].download_as_string()
+    logger.info('Downloaded Survey String', latest)
+    return json.loads(latest)
 
 
 def get_presentable_surveys(elements):
