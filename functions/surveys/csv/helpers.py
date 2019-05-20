@@ -19,18 +19,18 @@ def flatten_dict(value):
     :param value:
     :return:
     """
-    flat_dict__ = dict()
-    for _key, _value in value.items():
-        if isinstance(_value, list):
+    flat = dict()
+    for key, value in value.items():
+        if isinstance(value, list):
             torn = dict()
-            for index, x in enumerate(_value):
+            for index, x in enumerate(value):
                 torn[f"items__{index}"] = pd.io.json.json_normalize(
                     x, sep="."
                 ).to_dict(orient="records")[0]
-                flat_dict__[_key] = torn
+                flat[key] = torn
         else:
-            flat_dict__[_key] = _value
-    return flat_dict__
+            flat[key] = value
+    return flat
 
 
 def create_csv_file(surveys):
