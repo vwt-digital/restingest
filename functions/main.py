@@ -1,9 +1,11 @@
 import logging
+import os
 
 import requests
 import config
 import json
 
+from cryptography.fernet import Fernet
 from flask import jsonify
 from flask import make_response
 from requests_oauthlib import OAuth1
@@ -57,9 +59,13 @@ def handle_http_store_blob_trigger_func(request):
         logging.info(data)
 
         if oauth1_config:
+            token = os.environ.get('ENCRYPT_KEY', 'Insert a Decryption key')
+            f_decrypt = Fernet(token)
+            consumer_key = f_decrypt.decrypt(config.CONSUMER_KEY).decode()
+            consumer_secret = f_decrypt.decrypt(config.CONSUMER_SECRET).decode()
             oauth_1 = OAuth1(
-                config.CONSUMER_KEY,
-                config.CONSUMER_SECRET,
+                consumer_key,
+                consumer_secret,
                 signature_method='HMAC-SHA1'
             )
 
