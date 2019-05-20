@@ -60,7 +60,7 @@ def handle_http_store_blob_trigger_func(request):
 
         if oauth1_config:
             token = os.environ.get('ENCRYPT_KEY', 'Insert a Decryption key')
-            f_decrypt = Fernet(token)
+            f_decrypt = Fernet(token.encode())
             consumer_key = f_decrypt.decrypt(config.CONSUMER_KEY).decode()
             consumer_secret = f_decrypt.decrypt(config.CONSUMER_SECRET).decode()
             oauth_1 = OAuth1(
