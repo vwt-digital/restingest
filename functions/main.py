@@ -56,6 +56,7 @@ def handle_http_store_blob_trigger_func(request):
         logging.info(request_def['url'])
         logging.info(data)
 
+        surveys = dict()
         if oauth1_config:
             token = os.environ.get('ENCRYPT_KEY', 'Insert a Decryption key')
             f_decrypt = Fernet(token.encode())
@@ -74,6 +75,9 @@ def handle_http_store_blob_trigger_func(request):
                 json=json.dumps(data),
                 headers=cpHeaders
             )
+            
+            for survey in data_response.json()['elements']:
+                surveys[survey["id"]] = survey
         else:
             data_response = requests.post(
                 request_def['url'],
@@ -97,7 +101,7 @@ def handle_http_store_blob_trigger_func(request):
             url=request.args['storepath'],
             method='POST',
             headers={'Content-Type': 'application/json'},
-            data=get_presentable_surveys(data_response.json()['elements']) if oauth1_config else data_response.json()
+            data=surveys if oauth1_config else data_response.json()
             )
     else:
         problem = {'type': 'InvalidRequest',
