@@ -58,10 +58,10 @@ def handle_http_store_blob_trigger_func(request):
 
         surveys = dict()
         if oauth1_config:
-            token = os.environ.get('ENCRYPT_KEY', 'Insert a Decryption key')
-            f_decrypt = Fernet(token.encode())
-            consumer_key = f_decrypt.decrypt(config.CONSUMER_KEY).decode()
-            consumer_secret = f_decrypt.decrypt(config.CONSUMER_SECRET).decode()
+            file = open("consumer_secret_access_token.key", "r")
+            consumer_secret = file.read().split()[0]
+
+            consumer_key = config.CONSUMER_KEY
             oauth_1 = OAuth1(
                 consumer_key,
                 consumer_secret,
@@ -75,7 +75,7 @@ def handle_http_store_blob_trigger_func(request):
                 json=json.dumps(data),
                 headers=cpHeaders
             )
-            
+
             for survey in data_response.json()['elements']:
                 surveys[survey["id"]] = survey
         else:
