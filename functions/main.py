@@ -56,7 +56,6 @@ def handle_http_store_blob_trigger_func(request):
         logging.info(request_def['url'])
         logging.info(data)
 
-        surveys = dict()
         if oauth1_config:
             file = open("consumer_secret_access_token.key", "r")
             consumer_secret = file.read().split()[0]
@@ -75,9 +74,6 @@ def handle_http_store_blob_trigger_func(request):
                 json=json.dumps(data),
                 headers=cpHeaders
             )
-
-            for survey in data_response.json()['elements']:
-                surveys[survey["id"]] = survey
         else:
             data_response = requests.post(
                 request_def['url'],
@@ -101,7 +97,7 @@ def handle_http_store_blob_trigger_func(request):
             url=request.args['storepath'],
             method='POST',
             headers={'Content-Type': 'application/json'},
-            data=surveys if oauth1_config else data_response.json()
+            data=data_response.json()
             )
     else:
         problem = {'type': 'InvalidRequest',
