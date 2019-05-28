@@ -17,8 +17,8 @@ from openapi_server import connexion_app
 def get_authentication_secret():
     authentication_secret_encrypted = base64.b64decode(os.environ['AUTHENTICATION_SECRET_ENCRYPTED'])
     kms_client = kms_v1.KeyManagementServiceClient()
-    crypto_key_name = kms_client.crypto_key_path_path(os.environ['PROJECT_ID'], os.environ['KMS_REGION', os.environ['KMS_KEYRING'],
-                                                                              os.environ['KMS_KEY'])
+    crypto_key_name = kms_client.crypto_key_path_path(os.environ['PROJECT_ID'], os.environ['KMS_REGION'], os.environ['KMS_KEYRING'], 
+                                                      os.environ['KMS_KEY'])
     decrypt_response = kms_client.decrypt(crypto_key_name, authentication_secret_encrypted)
     return decrypt_response.plaintext.decode("utf-8").replace('\n', '')
 
