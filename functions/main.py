@@ -5,12 +5,22 @@ import requests
 import config
 import json
 
-from cryptography.fernet import Fernet
+from google.cloud import kms_v1
+
 from flask import jsonify
 from flask import make_response
 from requests_oauthlib import OAuth1
 
 from openapi_server import connexion_app
+
+
+def get_authentication_secret():
+    authentication_secret_encrypted = base64.b64decode(os.environ['AUTHENTICATION_SECRET_ENCRYPTED'])
+    kms_client = kms_v1.KeyManagementServiceClient()
+    crypto_key_name = kms_client.crypto_key_path_path(os.environ['PROJECT_ID'], os.environ['KMS_REGION', os.environ['KMS_KEYRING'],
+                                                                              os.environ['KMS_KEY'])
+    decrypt_response = kms_client.decrypt(crypto_key_name, authentication_secret_encrypted)
+    return decrypt_response.plaintext.decode("utf-8").replace('\n', '')
 
 
 def handle_http_store_blob_trigger_func(request):
@@ -57,9 +67,7 @@ def handle_http_store_blob_trigger_func(request):
         logging.info(data)
 
         if oauth1_config:
-            file = open("consumer_secret_access_token.key", "r")
-            consumer_secret = file.read().split()[0]
-
+            consumer_secret = get_authentication_secret()
             consumer_key = config.CONSUMER_KEY
             oauth_1 = OAuth1(
                 consumer_key,
