@@ -30,6 +30,5 @@ class TestDefaultController(BaseTestCase):
                          'Response body is : ' + response.data.decode('utf-8'))
 
 
-
 if __name__ == '__main__':
     unittest.main()

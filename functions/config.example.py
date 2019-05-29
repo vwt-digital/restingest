@@ -9,6 +9,13 @@
 # Base path of blobs stored
 BASE_PATH = 'base/path'
 
+# Uncomment and specify to add authentication using OAuth2
+# OAUTH_EXPECTED_AUDIENCE = 'https://expected.audience'
+# OAUTH_EXPECTED_ISSUER = 'https://expected.issuer/'
+# OAUTH_JWKS_URL = 'https://publickeyurl/'
+# OAUTH_APPID = [{'appid': 'actual_appid', 'scopes': ['scope1', 'scope2']}]
+
+
 # Uncomment to activate timer download function from specified url
 #    URL_COLLECTIONS = {
 #        'url1': {
