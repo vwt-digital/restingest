@@ -14,6 +14,5 @@ class GoogleCloudStorage(CloudStorageInterface):
         self.bucket_name = bucket_name
 
     def storeBlob(self, path, data):
-        logging.info("Storing to Google Storage [%s:%s] data: [%s]", self.bucket_name, path, data)
         blob = self.storageBucket.blob(path)
         blob.upload_from_string(data, 'application/json')

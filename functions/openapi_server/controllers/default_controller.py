@@ -9,13 +9,15 @@ from flask import request
 
 
 def apply_pii_filter(body, pii_filter):
-    if type(body) == dict or type(body) == list:
+    if type(body) == list:
+        for item in body:
+            apply_pii_filter(item, pii_filter)
+    elif type(body) == dict:
         for attr in body.copy():
             if type(body[attr]) == dict:
                 apply_pii_filter(body[attr], pii_filter)
             elif type(body[attr]) == list:
-                for item in body[attr]:
-                    apply_pii_filter(item, pii_filter)
+                apply_pii_filter(body[attr], pii_filter)
             elif attr in pii_filter:
                 del body[attr]
     return body
