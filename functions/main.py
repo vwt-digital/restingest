@@ -24,6 +24,32 @@ def get_authentication_secret():
     return decrypt_response.plaintext.decode("utf-8").replace('\n', '')
 
 
+def gather_authorization_headers(request_def):
+    authorization_headers = {}
+
+    if 'authorization' in request_def:
+        authorization_def = request_def['authorization']
+        authorization_type = authorization_def.get('type', '')
+
+        if authorization_type == 'OAuth1':
+            # no authorization headers required
+            authorization_headers = {}
+        elif authorization_type == 'CustomHeaderAPIKey':
+            if 'credentials' in authorization_def:
+                credentials = authorization_def['credentials']
+            else:
+                credentials = get_authentication_secret()
+            authorization_headers[authorization_def['custom_header_name']] = credentials
+        elif authorization_type:
+            if 'credentials' in authorization_def:
+                credentials = authorization_def['credentials']
+            else:
+                credentials = get_authentication_secret()
+            authorization_headers['Authorization'] = authorization_type + ' ' + credentials
+
+    return authorization_headers
+
+
 def handle_http_store_blob_trigger_func(request):
     logging.basicConfig(level=logging.info)
     logging.info('Python HTTP handle_http_store_blob_trigger_func function processed a request from %s.', request.path)
@@ -58,12 +84,9 @@ def handle_http_store_blob_trigger_func(request):
         cpHeaders = request_def['headers']
         cpHeaders['Content-Type'] = media_type
 
-        oauth1_config = request_def['authorization']['type'] == 'OAuth1'
-        if 'authorization' in request_def and not oauth1_config:
-            cpHeaders['Authorization'] = request_def['authorization']['type'] + ' '\
-                                         + request_def['authorization']['credentials']
+        cpHeaders.update(gather_authorization_headers(request_def))
+        oauth1_config = 'authorization' in request_def and request_def['authorization'].get('type', '') == 'OAuth1'
 
-        logging.info(cpHeaders)
         logging.info(request_def['url'])
         logging.info(data)
 
@@ -181,7 +204,9 @@ def get_http_store_blob_trigger_func(request):
         return response
 
     try:
-        data = requests.get(config.URL_COLLECTIONS[request.args['geturl']]['url']).json()
+        headers = config.URL_COLLECTIONS[request.args['geturl']].get('headers', {})
+        headers.update(gather_authorization_headers(config.URL_COLLECTIONS[request.args['geturl']]))
+        data = requests.get(config.URL_COLLECTIONS[request.args['geturl']]['url'], headers=headers).json()
     except requests.exceptions.ConnectionError:
         logging.warning('Error retrieving data from [%s]', config.URL_COLLECTIONS[request.args['geturl']]['url'])
         problem = {'type': 'InternalConfigError',
