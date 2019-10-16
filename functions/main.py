@@ -206,7 +206,17 @@ def get_http_store_blob_trigger_func(request):
     try:
         headers = config.URL_COLLECTIONS[request.args['geturl']].get('headers', {})
         headers.update(gather_authorization_headers(config.URL_COLLECTIONS[request.args['geturl']]))
-        data = requests.get(config.URL_COLLECTIONS[request.args['geturl']]['url'], headers=headers).json()
+        response = requests.get(config.URL_COLLECTIONS[request.args['geturl']]['url'], headers=headers)
+        response.raise_for_status()
+        data = response.json()
+    except requests.exceptions.HTTPError:
+        logging.exception('Error retrieving data from [%s]', config.URL_COLLECTIONS[request.args['geturl']]['url'])
+        problem = {'type': 'InternalCommError',
+                   'title': 'Internal communications error',
+                   'status': 500}
+        response = make_response(jsonify(problem), 500)
+        response.headers['Content-Type'] = 'application/problem+json',
+        return response
     except requests.exceptions.ConnectionError:
         logging.warning('Error retrieving data from [%s]', config.URL_COLLECTIONS[request.args['geturl']]['url'])
         problem = {'type': 'InternalConfigError',
