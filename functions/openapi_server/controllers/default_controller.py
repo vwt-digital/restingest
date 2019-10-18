@@ -1,6 +1,5 @@
 import datetime
 import json
-import copy
 import mimetypes
 
 from flask import jsonify
@@ -10,6 +9,9 @@ from flask import request
 
 
 def apply_pii_filter(body, pii_filter):
+    if type(body) != list and type(body) != dict:
+        body = json.loads(body)
+
     if type(body) == list:
         for item in body:
             apply_pii_filter(item, pii_filter)
@@ -25,7 +27,7 @@ def apply_pii_filter(body, pii_filter):
 
 
 def store_blobs(destination_path, blob_data, content_type, pii_filter):
-    blob_data_pii = json.dumps(apply_pii_filter(json.loads(blob_data), current_app.__pii_filter_def__)) if pii_filter \
+    blob_data_pii = json.dumps(apply_pii_filter(blob_data, current_app.__pii_filter_def__)) if pii_filter \
                     else blob_data
 
     for cs in current_app.cloudstorage:
