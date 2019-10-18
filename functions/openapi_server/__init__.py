@@ -38,7 +38,7 @@ class BaseApp:
 
     # handle_request uses the flask test_client to call the handler for a http request
     # This can be used to wrap the Connexion handler in a cloud lambda/function.
-    def handle_request(self, url, method, headers, data, content_type):
+    def handle_request(self, url, method, headers, data, type):
         if not self.cxnapp.app.__pii_filter_def__:
             raw = self.cxnapp.app.test_client().open(path='/openapi.json', method='GET',
                                                      content_type='application/json').json
@@ -48,19 +48,23 @@ class BaseApp:
                 self.cxnapp.app.__pii_filter_def__ = []
                 logging.debug("Doing [%s] to [%s]", method, url)
         if method == 'POST' or method == 'OPTIONS' or method == 'GET':
-            req_body = None
-            if data.is_json:
-                req_body = data.get_json(silent=True)
+            if 'request' in type:
+                if data.is_json:
+                    req_body = data.get_json(silent=True)
+                    return self.get_cxnapp().app.test_client().open(path=url, method=method, headers=headers, json=req_body,
+                                                                    content_type='application/json')
+                else:
+                    if data.files:
+                        req_body = data.files
+                    else:
+                        req_body = data.form if data.form else data.data
+
+                    return self.get_cxnapp().app.test_client().open(path=url, method=method, headers=headers, data=req_body,
+                                                                    content_type=(data.mimetype if data.mimetype else ''))
+            elif 'response' in type:
+                req_body = data.json()
                 return self.get_cxnapp().app.test_client().open(path=url, method=method, headers=headers, json=req_body,
                                                                 content_type='application/json')
-            else:
-                if data.files:
-                    req_body = data.files
-                else:
-                    req_body = data.form if data.form else data.data
-
-                return self.get_cxnapp().app.test_client().open(path=url, method=method, headers=headers, data=req_body,
-                                                                content_type=content_type)
         else:
             raise NotImplementedError
 

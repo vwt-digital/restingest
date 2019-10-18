@@ -129,7 +129,8 @@ def handle_http_store_blob_trigger_func(request):
             url=request.args['storepath'],
             method='POST',
             headers={'Content-Type': 'application/json'},
-            data=data_response.json()
+            data=data_response,
+            type='response'
             )
     else:
         problem = {'type': 'InvalidRequest',
@@ -151,7 +152,7 @@ def receive_http_store_blob_trigger_func(request):
         cpHeaders[key] = value
 
     return connexion_app.handle_request(url=request.path, method=request.method,
-                                        headers=cpHeaders, data=request, content_type=request.mimetype)
+                                        headers=cpHeaders, data=request, type='request')
 
 
 def get_http_store_blob_trigger_func(request):
@@ -198,4 +199,4 @@ def get_http_store_blob_trigger_func(request):
         return response
 
     return connexion_app.handle_request(url=request.args['storepath'], method='POST',
-                                        headers={'Content-Type': 'application/json'}, data=data)
+                                        headers={'Content-Type': 'application/json'}, data=response, type='response')
