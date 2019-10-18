@@ -40,13 +40,13 @@ def generic_post(body):
     now = datetime.datetime.utcnow()
     timestamp = '%04d%02d%02dT%02d%02d%02dZ' % (now.year, now.month, now.day,
                                                 now.hour, now.minute, now.second)
-    destination_path = '%s%s/%04d/%02d/%02d/%s%s' % (current_app.base_path, request.path,
-                                                     now.year, now.month, now.day,
-                                                     timestamp, (extension if extension else ''))
+    destination_path = '%s%s/%04d/%02d/%02d' % (current_app.base_path, request.path,
+                                                now.year, now.month, now.day)
 
     try:
         if body:
-            store_blobs(destination_path, body, request.mimetype,
+            file_destination_path = '%s/%s%s' % (destination_path, timestamp, (extension if extension else ''))
+            store_blobs(file_destination_path, body, request.mimetype,
                         (True if 'application/json' in request.mimetype else False))
         elif request.files:
             sub_destination_path = '%s%s/%04d/%02d/%02d' % (current_app.base_path, request.path, now.year,
@@ -72,7 +72,8 @@ def generic_post(body):
                                                             (extension if extension else ''))
                     store_blobs(file_destination_path, blob_data, request.mimetype, False)
         elif request.data:
-            store_blobs(destination_path, request.data, request.mimetype, False)
+            file_destination_path = '%s/%s%s' % (destination_path, timestamp, (extension if extension else ''))
+            store_blobs(file_destination_path, request.data, request.mimetype, False)
 
         return make_response(jsonify({'path': destination_path}), 201)
     except Exception as error:
