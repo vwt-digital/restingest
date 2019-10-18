@@ -146,41 +146,12 @@ def receive_http_store_blob_trigger_func(request):
 
     logging.debug(request.headers)
 
-    req_body = None
-
-    if request.method == "POST":
-        media_type = ""
-
-        try:
-            media_type = request.headers['Content-Type']
-        except KeyError:
-            pass
-
-        if not media_type or media_type != 'application/json':
-            problem = {'type': 'InvalidMediaType',
-                       'title': 'Unsupported media type, expected application/json',
-                       'status': 415}
-            response = make_response(jsonify(problem), 415)
-            response.headers['Content-Type'] = 'application/problem+json',
-            return response
-
-        try:
-            req_body = request.get_json(silent=True)
-        except ValueError:
-            problem = {'type': 'InvalidJSON',
-                       'title': 'Invalid JSON',
-                       'status': 400}
-            response = make_response(jsonify(problem), 415)
-            response.headers['Content-Type'] = 'application/problem+json',
-            return response
-
     cpHeaders = {}
-
     for key, value in request.headers:
         cpHeaders[key] = value
 
-    return connexion_app.handle_request(url=request.path, method=request.method, headers=cpHeaders,
-                                        data=req_body)
+    return connexion_app.handle_request(url=request.path, method=request.method,
+                                        headers=cpHeaders, data=request, content_type=request.mimetype)
 
 
 def get_http_store_blob_trigger_func(request):

@@ -24,26 +24,52 @@ def apply_pii_filter(body, pii_filter):
     return body
 
 
+def store_blobs(destination_path, blob_data, content_type, pii_filter):
+    blob_data_pii = json.dumps(apply_pii_filter(json.loads(blob_data), current_app.__pii_filter_def__)) if pii_filter \
+                    else blob_data
+
+    for cs in current_app.cloudstorage:
+        cs.storeBlob(destination_path, blob_data_pii, content_type)
+
+    for cs in current_app.cloudlogstorage:
+        cs.storeBlob(destination_path, blob_data, content_type)
+
+
 def generic_post(body):
     extension = mimetypes.guess_extension(request.mimetype)
     now = datetime.datetime.utcnow()
     timestamp = '%04d%02d%02dT%02d%02d%02dZ' % (now.year, now.month, now.day,
                                                 now.hour, now.minute, now.second)
-    destinationpath = '%s%s/%04d/%02d/%02d/%s%s' % (current_app.base_path, request.path,
-                                                    now.year, now.month, now.day,
-                                                    timestamp, (extension if extension else ''))
+    destination_path = '%s%s/%04d/%02d/%02d/%s%s' % (current_app.base_path, request.path,
+                                                     now.year, now.month, now.day,
+                                                     timestamp, (extension if extension else ''))
 
-    for cs in current_app.cloudstorage:
-        cs.storeBlob(destinationpath, json.dumps(apply_pii_filter(copy.deepcopy(body),
-                                                                  current_app.__pii_filter_def__)),
-                                                                  request.mimetype)
+    try:
+        if body:
+            store_blobs(destination_path, body, request.mimetype, (True if 'application/json' in request.mimetype else False))
+        elif request.files:
+            for index, file in enumerate(request.files, start=1):
+                file_extension = mimetypes.guess_extension(request.files[file].content_type)
+                sub_destination_path = '%s%s/%04d/%02d/%02d/%s_%s%s' % (current_app.base_path, request.path,
+                                                                        now.year, now.month, now.day,
+                                                                        timestamp, index,
+                                                                        (file_extension if file_extension else ''))
+                store_blobs(sub_destination_path, request.files[file].read(), request.files[file].content_type, False)
+        elif request.form:
+            for data in request.form:
+                new_data = json.loads(request.form[data])
+                for index, blob_data in enumerate(new_data, start=1):
+                    sub_destination_path = '%s%s/%04d/%02d/%02d/%s_%s%s' % (current_app.base_path, request.path,
+                                                                            now.year, now.month, now.day,
+                                                                            timestamp, index,
+                                                                            (extension if extension else ''))
+                    store_blobs(sub_destination_path, blob_data, request.mimetype, False)
+        elif request.data:
+            store_blobs(destination_path, request.data, request.mimetype, False)
 
-    for cs in current_app.cloudlogstorage:
-        cs.storeBlob(destinationpath,
-                     json.dumps(copy.deepcopy(body)),
-                     request.mimetype)
-
-    return make_response(jsonify({'path': destinationpath}), 201)
+        return make_response(jsonify({'path': destination_path}), 201)
+    except Exception as error:
+        return make_response(jsonify(error), 400)
 
 
 def generic_post2(body):
