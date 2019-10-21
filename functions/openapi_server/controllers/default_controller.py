@@ -1,3 +1,4 @@
+import logging
 import datetime
 import json
 import mimetypes
@@ -76,10 +77,13 @@ def generic_post(body):
         elif request.data:
             file_destination_path = '%s/%s%s' % (destination_path, timestamp, (extension if extension else ''))
             store_blobs(file_destination_path, request.data, request.mimetype, False)
+        else:
+            raise ValueError('No correct body provided.')
 
         return make_response(jsonify({'path': destination_path}), 201)
-    except Exception as e:
-        return make_response(jsonify(message='Failed to write to blob', error=e.message), 400)
+    except Exception as error:
+        logging.exception(error)
+        return make_response(jsonify(str(error)), 400)
 
 
 def generic_post2(body):
