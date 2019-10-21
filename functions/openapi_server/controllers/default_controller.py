@@ -31,6 +31,8 @@ def store_blobs(destination_path, blob_data, content_type, pii_filter):
     blob_data_pii = json.dumps(apply_pii_filter(blob_data, current_app.__pii_filter_def__)) if pii_filter \
                     else blob_data
 
+    blob_data = json.dumps(blob_data) if type(blob_data) != list or type(blob_data) != dict else blob_data
+
     for cs in current_app.cloudstorage:
         cs.storeBlob(destination_path, blob_data_pii, content_type)
 
