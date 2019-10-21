@@ -78,8 +78,8 @@ def generic_post(body):
             store_blobs(file_destination_path, request.data, request.mimetype, False)
 
         return make_response(jsonify({'path': destination_path}), 201)
-    except Exception as error:
-        return make_response(jsonify(error), 400)
+    except Exception as e:
+        return make_response(jsonify(message='Failed to write to blob', error=e.message), 400)
 
 
 def generic_post2(body):
