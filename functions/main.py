@@ -13,6 +13,7 @@ from flask import make_response
 from requests_oauthlib import OAuth1
 
 from openapi_server import connexion_app
+from xml.sax.saxutils import escape
 
 
 def get_authentication_secret():
@@ -90,6 +91,23 @@ def handle_http_store_blob_trigger_func(request):
         logging.info(request_def['url'])
         logging.info(data)
 
+        if media_type == 'application/json':
+            request_data = json.dumps(data)
+        else:
+            request_data = data
+
+        if 'authorization' in request_def and \
+                'username' in request_def['authorization'] and \
+                request_def['authorization'].get('type', '') == 'Soap':
+            values_to_replace = {
+                '_SOURCE': request_def['url'],
+                '_USERNAME_': request_def['authorization']['username'],
+                '_PASSWORD_': escape(get_authentication_secret())
+            }
+            for value in values_to_replace:
+                request_data = request_data.replace(value,
+                                                    values_to_replace[value])
+
         if oauth1_config:
             consumer_secret = get_authentication_secret()
             consumer_key = config.CONSUMER_KEY
@@ -102,14 +120,14 @@ def handle_http_store_blob_trigger_func(request):
             data_response = requests.post(
                 request_def['url'],
                 auth=oauth_1,
-                data=json.dumps(data),
-                json=json.dumps(data),
+                data=request_data,
+                json=request_data,
                 headers=cpHeaders
             )
         else:
             data_response = requests.post(
                 request_def['url'],
-                data=json.dumps(data),
+                data=request_data,
                 headers=cpHeaders,
             )
 
@@ -128,7 +146,7 @@ def handle_http_store_blob_trigger_func(request):
         return connexion_app.handle_request(
             url=request.args['storepath'],
             method='POST',
-            headers={'Content-Type': 'application/json'},
+            headers={'Content-Type': media_type},
             data=data_response,
             type='response'
             )

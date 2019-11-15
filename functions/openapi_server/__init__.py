@@ -62,9 +62,16 @@ class BaseApp:
                     return self.get_cxnapp().app.test_client().open(path=url, method=method, headers=headers, data=req_body,
                                                                     content_type=(data.mimetype if data.mimetype else ''))
             elif 'response' in type:
-                req_body = data.json()
-                return self.get_cxnapp().app.test_client().open(path=url, method=method, headers=headers, json=req_body,
-                                                                content_type='application/json')
+                if 'Content-Type' in headers \
+                        and headers['Content-Type'] == 'application/json':
+                    req_body = data.json()
+                    return self.get_cxnapp().app.test_client().open(path=url, method=method, headers=headers, json=req_body,
+                                                                    content_type='application/json')
+                else:
+                    req_body = data.content
+                    return self.get_cxnapp().app.test_client() \
+                        .open(path=url, method=method, headers=headers, data=req_body,
+                              content_type=(headers['Content-Type'] if 'Content-Type' in headers else ''))
         else:
             raise NotImplementedError
 
