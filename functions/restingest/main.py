@@ -6,6 +6,7 @@ import requests
 import config
 import json
 
+from xml.etree import ElementTree
 from google.cloud import kms_v1
 
 from flask import jsonify
@@ -74,29 +75,49 @@ def http_request_store_blob_trigger_func(request):
     request_def = config.URL_COLLECTIONS[request.args['geturl']]
     logging.info('Stored definition {}'.format(request_def))
 
-    skip = 0
+    skip = None
     taken = 0
     take_size = request_def.get('pagination', {}).get('take_size', 0)
-    while skip == 0 or taken == take_size:
+    while not skip or taken == take_size:
         result_response, data_response = request_store_blob_trigger(request.args['storepath'], request_def, skip)
 
         if take_size:
-            if 'Content-Type' in data_response.headers and data_response.headers['Content-Type'].startswith('application/json'):
-                json_body = data_response.json()
-                if 'count_element' in request_def['pagination']:
-                    taken = len(json_body[request_def['pagination']['count_element']])
-                else:
-                    taken = len(json_body)
-                logging.info(f'Received page of results contains {taken} elements')
-                skip += taken
+            taken = count_elements(request_def, data_response)
+
+            if taken:
+                skip = (skip if skip else 0) + taken
             else:
-                logging.warning(f"Pagination specified but only supported for application/json response, not for "
-                                f"{data_response.headers['Content-Type']}")
                 break
         else:
             break
 
     return result_response
+
+
+def count_elements(request_def, data_response):
+    taken = None
+    content_type = data_response.headers.get('Content-Type', None)
+
+    if content_type.startswith('application/json'):
+        json_body = data_response.json()
+
+        if 'count_element' in request_def['pagination']:
+            taken = len(json_body[request_def['pagination']['count_element']])
+        else:
+            taken = len(json_body)
+    elif content_type.startswith('application/xml') or content_type.startswith('text/xml') or \
+            content_type.startswith('application/atom+xml'):
+        xml_body = ElementTree.XML(data_response.content)
+        count_element = request_def['pagination'].get('count_element', '*')
+        taken = len(xml_body.findall(f'{count_element}'))
+    else:
+        logging.warning(f"Pagination specified but only supported for application/json response, not for "
+                        f"{data_response.headers['Content-Type']}")
+
+    if taken:
+        logging.info(f'Received page of results contains {taken} elements')
+
+    return taken
 
 
 def request_store_blob_trigger(storepath, request_def, skip):
@@ -117,10 +138,11 @@ def append_pagination_to_url(request_def, skip):
     url = request_def['url']
 
     if 'pagination' in request_def:
+        skip_val = skip if skip else 0
         take_param = request_def['pagination'].get('take_param', 'take')
         skip_param = request_def['pagination'].get('skip_param', 'skip')
         take_size = request_def['pagination']['take_size']
-        return f'{url}?{take_param}={take_size}&{skip_param}={skip}'
+        return f'{url}?{take_param}={take_size}&{skip_param}={skip_val}'
 
     return url
 
@@ -186,11 +208,15 @@ def request_by_posting_http_store_blob(storepath, request_def, skip):
         result_response.headers['Content-Type'] = 'application/problem+json',
         return result_response, None
 
+    headers = {'Content-Type': media_type}
+
+    if 'pagination' in request_def:
+        headers['X-Take-Skip'] = skip if skip else 0
+
     return connexion_app.handle_request(
         url=storepath,
         method='POST',
-        headers={'Content-Type': media_type,
-                 'X-Take-Skip': skip},
+        headers=headers,
         data=data_response,
         type='response'
     ), data_response
@@ -223,10 +249,14 @@ def request_by_getting_http_store_blob(storepath, request_def, skip):
         result_response.headers['Content-Type'] = 'application/problem+json',
         return result_response, None
 
-    media_type = request_def.get('media_type', 'application/json')
+    media_type = data_response.headers.get('Content-Type', 'application/json')
+    headers = {'Content-Type': media_type}
+
+    if 'pagination' in request_def:
+        headers['X-Take-Skip'] = skip if skip else 0
+
     return connexion_app.handle_request(url=storepath, method='POST',
-                                        headers={'Content-Type': media_type,
-                                                 'X-Take-Skip': skip},
+                                        headers=headers,
                                         data=data_response, type='response'), data_response
 
 
