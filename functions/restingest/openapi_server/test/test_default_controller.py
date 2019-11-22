@@ -17,7 +17,7 @@ class TestDefaultController(BaseTestCase):
         Create a devicesLocation
         """
         body = {}
-        headers = { 
+        headers = {
             'Content-Type': 'application/json',
         }
         response = self.client.open(
