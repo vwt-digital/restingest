@@ -51,16 +51,13 @@ def gather_authorization_headers(request_def):
     return authorization_headers
 
 
-def handle_http_store_blob_trigger_func(request):
+def http_request_store_blob_trigger_func(request):
     logging.basicConfig(level=logging.info)
     logging.info('Python HTTP handle_http_store_blob_trigger_func function processed a request from %s.', request.path)
 
-    logging.info(request.headers)
-    logging.info(request.args)
-
     if not request.args or 'geturl' not in request.args or request.args['geturl'] not in config.URL_COLLECTIONS:
         problem = {'type': 'MissingParameter',
-                   'title': 'Expected parameter geturl not found',
+                   'title': 'Expected parameter geturl not found or invalid',
                    'status': 400}
         response = make_response(jsonify(problem), 400)
         response.headers['Content-Type'] = 'application/problem+json',
@@ -75,81 +72,12 @@ def handle_http_store_blob_trigger_func(request):
         return response
 
     request_def = config.URL_COLLECTIONS[request.args['geturl']]
-    logging.info('Strored definition {}'.format(request_def))
+    logging.info('Stored definition {}'.format(request_def))
 
     if request_def['method'] == 'GET':
-        return get_http_store_blob_trigger_func(request)
+        return request_by_getting_http_store_blob(request, request_def)
     elif request_def['method'] == 'POST':
-        media_type = request_def['body']['type']
-        data = request_def['body']['content']
-        cpHeaders = request_def['headers']
-        cpHeaders['Content-Type'] = media_type
-
-        cpHeaders.update(gather_authorization_headers(request_def))
-        oauth1_config = 'authorization' in request_def and request_def['authorization'].get('type', '') == 'OAuth1'
-
-        logging.info(request_def['url'])
-        logging.info(data)
-
-        if media_type == 'application/json':
-            request_data = json.dumps(data)
-        else:
-            request_data = data
-
-        if 'authorization' in request_def and \
-                'username' in request_def['authorization'] and \
-                request_def['authorization'].get('type', '') == 'Soap':
-            values_to_replace = {
-                '_SOURCE': request_def['url'],
-                '_USERNAME_': request_def['authorization']['username'],
-                '_PASSWORD_': escape(get_authentication_secret())
-            }
-            for value in values_to_replace:
-                request_data = request_data.replace(value,
-                                                    values_to_replace[value])
-
-        if oauth1_config:
-            consumer_secret = get_authentication_secret()
-            consumer_key = config.CONSUMER_KEY
-            oauth_1 = OAuth1(
-                consumer_key,
-                consumer_secret,
-                signature_method='HMAC-SHA1'
-            )
-
-            data_response = requests.post(
-                request_def['url'],
-                auth=oauth_1,
-                data=request_data,
-                json=request_data,
-                headers=cpHeaders
-            )
-        else:
-            data_response = requests.post(
-                request_def['url'],
-                data=request_data,
-                headers=cpHeaders,
-            )
-
-        if data_response.status_code != requests.codes.ok:
-            logging.error(data_response.headers)
-            logging.error(data_response.status_code)
-            logging.error(data_response.text)
-            problem = {'type': 'DataError',
-                       'title': 'Error requesting data',
-                       'content': json.dumps(data_response.json()),
-                       'status': 400}
-            response = make_response(jsonify(problem), 400)
-            response.headers['Content-Type'] = 'application/problem+json',
-            return response
-
-        return connexion_app.handle_request(
-            url=request.args['storepath'],
-            method='POST',
-            headers={'Content-Type': media_type},
-            data=data_response,
-            type='response'
-            )
+        return request_by_posting_http_store_blob(request, request_def)
     else:
         problem = {'type': 'InvalidRequest',
                    'title': 'Invalid Request',
@@ -159,11 +87,107 @@ def handle_http_store_blob_trigger_func(request):
         return response
 
 
-def receive_http_store_blob_trigger_func(request):
-    logging.basicConfig(level=logging.info)
-    logging.info('Python HTTP receive_http_store_blob_trigger_func function processed a request from %s.', request.path)
+def request_by_posting_http_store_blob(request, request_def):
+    media_type = request_def['body']['type']
+    data = request_def['body']['content']
+    cpHeaders = request_def['headers']
+    cpHeaders['Content-Type'] = media_type
+    cpHeaders.update(gather_authorization_headers(request_def))
+    oauth1_config = 'authorization' in request_def and request_def['authorization'].get('type', '') == 'OAuth1'
 
-    logging.debug(request.headers)
+    if media_type == 'application/json':
+        request_data = json.dumps(data)
+    else:
+        request_data = data
+
+    if 'authorization' in request_def and \
+            'username' in request_def['authorization'] and \
+            request_def['authorization'].get('type', '') == 'Soap':
+        values_to_replace = {
+            '_SOURCE': request_def['url'],
+            '_USERNAME_': request_def['authorization']['username'],
+            '_PASSWORD_': escape(get_authentication_secret())
+        }
+        for value in values_to_replace:
+            request_data = request_data.replace(value,
+                                                values_to_replace[value])
+    if oauth1_config:
+        consumer_secret = get_authentication_secret()
+        consumer_key = config.CONSUMER_KEY
+        oauth_1 = OAuth1(
+            consumer_key,
+            consumer_secret,
+            signature_method='HMAC-SHA1'
+        )
+
+        data_response = requests.post(
+            request_def['url'],
+            auth=oauth_1,
+            data=request_data,
+            json=request_data,
+            headers=cpHeaders
+        )
+    else:
+        data_response = requests.post(
+            request_def['url'],
+            data=request_data,
+            headers=cpHeaders,
+        )
+
+    if data_response.status_code != requests.codes.ok:
+        logging.error(data_response.headers)
+        logging.error(data_response.status_code)
+        logging.error(data_response.text)
+        problem = {'type': 'DataError',
+                   'title': 'Error requesting data',
+                   'content': json.dumps(data_response.json()),
+                   'status': 400}
+        result_response = make_response(jsonify(problem), 400)
+        result_response.headers['Content-Type'] = 'application/problem+json',
+        return result_response
+
+    return connexion_app.handle_request(
+        url=request.args['storepath'],
+        method='POST',
+        headers={'Content-Type': media_type},
+        data=data_response,
+        type='response'
+    )
+
+
+def request_by_getting_http_store_blob(request, request_def):
+    logging.info('Python HTTP get_http_store_blob_trigger_func function processed a request')
+
+    try:
+        headers = request_def.get('headers', {})
+        headers.update(gather_authorization_headers(request_def))
+        data_response = requests.get(request_def['url'], headers=headers)
+        data_response.raise_for_status()
+    except requests.exceptions.HTTPError:
+        logging.exception('Error retrieving data from [%s]', request_def['url'])
+        problem = {'type': 'InternalCommError',
+                   'title': 'Internal communications error',
+                   'status': 500}
+        result_response = make_response(jsonify(problem), 500)
+        result_response.headers['Content-Type'] = 'application/problem+json',
+        return result_response
+    except requests.exceptions.ConnectionError:
+        logging.warning('Error retrieving data from [%s]', request_def['url'])
+        problem = {'type': 'InternalConfigError',
+                   'title': 'Internal configuration incorrect',
+                   'status': 500}
+        result_response = make_response(jsonify(problem), 500)
+        result_response.headers['Content-Type'] = 'application/problem+json',
+        return result_response
+
+    media_type = request_def.get('media_type', 'application/json')
+    return connexion_app.handle_request(url=request.args['storepath'], method='POST',
+                                        headers={'Content-Type': media_type}, data=data_response, type='response')
+
+
+def http_receive_store_blob_trigger_func(request):
+    logging.basicConfig(level=logging.info)
+    logging.info('Python HTTP http_receive_store_blob_trigger_func function processed a request from %s.', request.path)
 
     cpHeaders = {}
     for key, value in request.headers:
@@ -171,49 +195,3 @@ def receive_http_store_blob_trigger_func(request):
 
     return connexion_app.handle_request(url=request.path, method=request.method,
                                         headers=cpHeaders, data=request, type='request')
-
-
-def get_http_store_blob_trigger_func(request):
-    logging.basicConfig(level=logging.info)
-    logging.info('Python HTTP get_http_store_blob_trigger_func function processed a request')
-
-    if not request.args or 'geturl' not in request.args or request.args['geturl'] not in config.URL_COLLECTIONS:
-        problem = {'type': 'MissingParameter',
-                   'title': 'Expected parameter geturl not found',
-                   'status': 400}
-        response = make_response(jsonify(problem), 400)
-        response.headers['Content-Type'] = 'application/problem+json',
-        return response
-
-    if not request.args or 'storepath' not in request.args:
-        problem = {'type': 'MissingParameter',
-                   'title': 'Expected parameter storepath not found',
-                   'status': 400}
-        response = make_response(jsonify(problem), 400)
-        response.headers['Content-Type'] = 'application/problem+json',
-        return response
-
-    try:
-        headers = config.URL_COLLECTIONS[request.args['geturl']].get('headers', {})
-        headers.update(gather_authorization_headers(config.URL_COLLECTIONS[request.args['geturl']]))
-        response = requests.get(config.URL_COLLECTIONS[request.args['geturl']]['url'], headers=headers)
-        response.raise_for_status()
-    except requests.exceptions.HTTPError:
-        logging.exception('Error retrieving data from [%s]', config.URL_COLLECTIONS[request.args['geturl']]['url'])
-        problem = {'type': 'InternalCommError',
-                   'title': 'Internal communications error',
-                   'status': 500}
-        response = make_response(jsonify(problem), 500)
-        response.headers['Content-Type'] = 'application/problem+json',
-        return response
-    except requests.exceptions.ConnectionError:
-        logging.warning('Error retrieving data from [%s]', config.URL_COLLECTIONS[request.args['geturl']]['url'])
-        problem = {'type': 'InternalConfigError',
-                   'title': 'Internal configuration incorrect',
-                   'status': 500}
-        response = make_response(jsonify(problem), 500)
-        response.headers['Content-Type'] = 'application/problem+json',
-        return response
-
-    return connexion_app.handle_request(url=request.args['storepath'], method='POST',
-                                        headers={'Content-Type': 'application/json'}, data=response, type='response')
