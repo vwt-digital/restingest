@@ -12,7 +12,7 @@ Running restingest can be done by one of the following three ways.
 ### 1. Using Flask
 #### Run as a local Flask app
 ~~~
-cd functions
+cd functions/restingest
 export FLASK_APP=openapi_server:app
 flask run
 ~~~
@@ -28,7 +28,7 @@ curl -X POST -H "Content-Type: application/json" \
 #### On google
 ~~~
 cd functions
-gcloud functions deploy post-func --entry-point=receive_http_store_blob_trigger_func \
+gcloud functions deploy post-func --entry-point=http_receive_store_blob_trigger_func \
   --runtime=python37 --trigger-http
 ~~~
 
@@ -44,9 +44,9 @@ curl -X POST -H "Content-Type: application/json" \
 #### On Google
 ~~~
 cd functions
-gcloud functions deploy post-func --entry-point=get_http_store_blob_trigger_func \
+gcloud functions deploy post-func --entry-point=http_request_store_blob_trigger_func \
   --runtime=python37 --trigger-http
-gcloud beta scheduler jobs create http geturl1-job --schedule="*/5 * * * *" \
+gcloud scheduler jobs create http geturl1-job --schedule="*/5 * * * *" \
    --uri=https://functionendpoint.example.com?geturl=url1&storepath=url1result
 ~~~
 
