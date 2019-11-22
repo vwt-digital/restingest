@@ -71,7 +71,7 @@ class BaseApp:
                     req_body = data.content
                     return self.get_cxnapp().app.test_client() \
                         .open(path=url, method=method, headers=headers, data=req_body,
-                              content_type=(headers['Content-Type'] if 'Content-Type' in headers else ''))
+                              content_type=(headers.get('Content-Type', '')))
         else:
             raise NotImplementedError
 

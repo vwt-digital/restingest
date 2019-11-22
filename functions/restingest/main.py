@@ -74,10 +74,36 @@ def http_request_store_blob_trigger_func(request):
     request_def = config.URL_COLLECTIONS[request.args['geturl']]
     logging.info('Stored definition {}'.format(request_def))
 
+    skip = 0
+    taken = 0
+    take_size = request_def.get('pagination', {}).get('take_size', 0)
+    while skip == 0 or taken == take_size:
+        result_response, data_response = request_store_blob_trigger(request.args['storepath'], request_def, skip)
+
+        if take_size:
+            if 'Content-Type' in data_response.headers and data_response.headers['Content-Type'].startswith('application/json'):
+                json_body = data_response.json()
+                if 'count_element' in request_def['pagination']:
+                    taken = len(json_body[request_def['pagination']['count_element']])
+                else:
+                    taken = len(json_body)
+                logging.info(f'Received page of results contains {taken} elements')
+                skip += taken
+            else:
+                logging.warning(f"Pagination specified but only supported for application/json response, not for "
+                                f"{data_response.headers['Content-Type']}")
+                break
+        else:
+            break
+
+    return result_response
+
+
+def request_store_blob_trigger(storepath, request_def, skip):
     if request_def['method'] == 'GET':
-        return request_by_getting_http_store_blob(request, request_def)
+        return request_by_getting_http_store_blob(storepath, request_def, skip)
     elif request_def['method'] == 'POST':
-        return request_by_posting_http_store_blob(request, request_def)
+        return request_by_posting_http_store_blob(storepath, request_def, skip)
     else:
         problem = {'type': 'InvalidRequest',
                    'title': 'Invalid Request',
@@ -87,7 +113,19 @@ def http_request_store_blob_trigger_func(request):
         return response
 
 
-def request_by_posting_http_store_blob(request, request_def):
+def append_pagination_to_url(request_def, skip):
+    url = request_def['url']
+
+    if 'pagination' in request_def:
+        take_param = request_def['pagination'].get('take_param', 'take')
+        skip_param = request_def['pagination'].get('skip_param', 'skip')
+        take_size = request_def['pagination']['take_size']
+        return f'{url}?{take_param}={take_size}&{skip_param}={skip}'
+
+    return url
+
+
+def request_by_posting_http_store_blob(storepath, request_def, skip):
     media_type = request_def['body']['type']
     data = request_def['body']['content']
     cpHeaders = request_def['headers']
@@ -128,8 +166,10 @@ def request_by_posting_http_store_blob(request, request_def):
             headers=cpHeaders
         )
     else:
+        post_url = append_pagination_to_url(request_def, skip)
+        logging.info(f'Requesting data by POST to {post_url}')
         data_response = requests.post(
-            request_def['url'],
+            post_url,
             data=request_data,
             headers=cpHeaders,
         )
@@ -144,24 +184,27 @@ def request_by_posting_http_store_blob(request, request_def):
                    'status': 400}
         result_response = make_response(jsonify(problem), 400)
         result_response.headers['Content-Type'] = 'application/problem+json',
-        return result_response
+        return result_response, None
 
     return connexion_app.handle_request(
-        url=request.args['storepath'],
+        url=storepath,
         method='POST',
-        headers={'Content-Type': media_type},
+        headers={'Content-Type': media_type,
+                 'X-Take-Skip': skip},
         data=data_response,
         type='response'
-    )
+    ), data_response
 
 
-def request_by_getting_http_store_blob(request, request_def):
+def request_by_getting_http_store_blob(storepath, request_def, skip):
     logging.info('Python HTTP get_http_store_blob_trigger_func function processed a request')
 
     try:
         headers = request_def.get('headers', {})
         headers.update(gather_authorization_headers(request_def))
-        data_response = requests.get(request_def['url'], headers=headers)
+        get_url = append_pagination_to_url(request_def, skip)
+        logging.info(f'Requesting data by GET to {get_url}')
+        data_response = requests.get(get_url, headers=headers)
         data_response.raise_for_status()
     except requests.exceptions.HTTPError:
         logging.exception('Error retrieving data from [%s]', request_def['url'])
@@ -170,7 +213,7 @@ def request_by_getting_http_store_blob(request, request_def):
                    'status': 500}
         result_response = make_response(jsonify(problem), 500)
         result_response.headers['Content-Type'] = 'application/problem+json',
-        return result_response
+        return result_response, None
     except requests.exceptions.ConnectionError:
         logging.warning('Error retrieving data from [%s]', request_def['url'])
         problem = {'type': 'InternalConfigError',
@@ -178,11 +221,13 @@ def request_by_getting_http_store_blob(request, request_def):
                    'status': 500}
         result_response = make_response(jsonify(problem), 500)
         result_response.headers['Content-Type'] = 'application/problem+json',
-        return result_response
+        return result_response, None
 
     media_type = request_def.get('media_type', 'application/json')
-    return connexion_app.handle_request(url=request.args['storepath'], method='POST',
-                                        headers={'Content-Type': media_type}, data=data_response, type='response')
+    return connexion_app.handle_request(url=storepath, method='POST',
+                                        headers={'Content-Type': media_type,
+                                                 'X-Take-Skip': skip},
+                                        data=data_response, type='response'), data_response
 
 
 def http_receive_store_blob_trigger_func(request):
