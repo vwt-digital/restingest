@@ -1,7 +1,3 @@
-import logging
-
-import config
-
 from google.cloud import storage
 from abstractcloudstorage import CloudStorageInterface
 
