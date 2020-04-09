@@ -11,20 +11,23 @@ from flask import request
 
 def apply_pii_filter(body, pii_filter):
     if type(body) != list and type(body) != dict:
-        body = json.loads(body)
+        body_to_filter = json.loads(body)
+    else:
+        body_to_filter = body
 
-    if type(body) == list:
-        for item in body:
-            apply_pii_filter(item, pii_filter)
-    elif type(body) == dict:
-        for attr in body.copy():
-            if type(body[attr]) == dict:
-                apply_pii_filter(body[attr], pii_filter)
-            elif type(body[attr]) == list:
-                apply_pii_filter(body[attr], pii_filter)
-            elif attr in pii_filter:
-                del body[attr]
-    return body
+    if type(body_to_filter) == list:
+        filtered_body = []
+        for item in body_to_filter:
+            filtered_body.append(apply_pii_filter(item, pii_filter))
+    elif type(body_to_filter) == dict:
+        filtered_body = {}
+        for attr in body_to_filter:
+            if type(body_to_filter[attr]) == dict or type(body_to_filter[attr]) == list:
+                filtered_body[attr] = apply_pii_filter(body_to_filter[attr], pii_filter)
+            elif attr not in pii_filter:
+                filtered_body[attr] = body_to_filter[attr]
+
+    return filtered_body
 
 
 def store_blobs(destination_path, blob_data, content_type, pii_filter):
