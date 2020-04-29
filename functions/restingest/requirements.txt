@@ -10,6 +10,7 @@ Click==7.0
 clickclick==1.2.2
 connexion==2.0.2
 cryptography==2.8
+defusedxml==0.6.0
 Flask==1.1.1
 Flask-Cors==3.0.7
 Flask-Testing==0.6.1
