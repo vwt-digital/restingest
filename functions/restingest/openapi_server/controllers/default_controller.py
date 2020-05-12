@@ -8,6 +8,9 @@ from flask import make_response
 from flask import current_app
 from flask import request
 
+from defusedxml import ElementTree as defusedxml_ET
+from lxml import etree as ET
+
 
 def apply_pii_filter(body, pii_filter):
     if type(body) != list and type(body) != dict:
@@ -31,8 +34,17 @@ def apply_pii_filter(body, pii_filter):
 
 
 def store_blobs(destination_path, blob_data, content_type, pii_filter):
+    if content_type == 'text/xml':
+        safe_xml_tree = defusedxml_ET.fromstring(blob_data)
+        xml_tree = ET.fromstring(defusedxml_ET.tostring(safe_xml_tree))
+
+        for elem in xml_tree.getiterator():
+            elem.tag = ET.QName(elem).localname
+
+        blob_data = ET.tostring(xml_tree)
+
     blob_data_pii = json.dumps(apply_pii_filter(blob_data, current_app.__pii_filter_def__)) if pii_filter \
-                    else blob_data
+        else blob_data
 
     if type(blob_data) == list or type(blob_data) == dict:
         blob_data = json.dumps(blob_data)
