@@ -26,6 +26,8 @@ def apply_pii_filter(body, pii_filter):
                 filtered_body[attr] = apply_pii_filter(body_to_filter[attr], pii_filter)
             elif attr not in pii_filter:
                 filtered_body[attr] = body_to_filter[attr]
+    else:
+        filtered_body = body_to_filter
 
     return filtered_body
 
