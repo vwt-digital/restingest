@@ -13,10 +13,7 @@ from lxml import etree as ET
 
 
 def apply_pii_filter(body, pii_filter):
-    if type(body) != list and type(body) != dict:
-        body_to_filter = json.loads(body)
-    else:
-        body_to_filter = body
+    body_to_filter = body
 
     if type(body_to_filter) == list:
         filtered_body = []
@@ -29,11 +26,13 @@ def apply_pii_filter(body, pii_filter):
                 filtered_body[attr] = apply_pii_filter(body_to_filter[attr], pii_filter)
             elif attr not in pii_filter:
                 filtered_body[attr] = body_to_filter[attr]
+    else:
+        filtered_body = body_to_filter
 
     return filtered_body
 
 
-def store_blobs(destination_path, blob_data, content_type, pii_filter):
+def store_blobs(destination_path, blob_data, content_type, should_apply_pii_filter):
     if content_type == 'text/xml':
         safe_xml_tree = defusedxml_ET.fromstring(blob_data)
         xml_tree = ET.fromstring(defusedxml_ET.tostring(safe_xml_tree))
@@ -43,8 +42,14 @@ def store_blobs(destination_path, blob_data, content_type, pii_filter):
 
         blob_data = ET.tostring(xml_tree)
 
-    blob_data_pii = json.dumps(apply_pii_filter(blob_data, current_app.__pii_filter_def__)) if pii_filter \
-        else blob_data
+    if should_apply_pii_filter:
+        if type(blob_data) != list and type(blob_data) != dict:
+            blob_data_to_filter = json.loads(blob_data)
+        else:
+            blob_data_to_filter = blob_data
+        blob_data_pii = json.dumps(apply_pii_filter(blob_data_to_filter, current_app.__pii_filter_def__))
+    else:
+        blob_data_pii = blob_data
 
     if type(blob_data) == list or type(blob_data) == dict:
         blob_data = json.dumps(blob_data)

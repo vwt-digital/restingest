@@ -46,7 +46,7 @@ class BaseApp:
                 self.cxnapp.app.__pii_filter_def__ = raw['x-pii-filter']
             else:
                 self.cxnapp.app.__pii_filter_def__ = []
-                logging.debug("Doing [%s] to [%s]", method, url)
+
         if method == 'POST' or method == 'OPTIONS' or method == 'GET':
             if 'request' in type:
                 if data.is_json:
