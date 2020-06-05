@@ -197,8 +197,6 @@ def request_by_posting_http_store_blob(storepath, request_def, skip):
         )
 
     if data_response.status_code != requests.codes.ok:
-        logging.error(data_response.headers)
-        logging.error(data_response.status_code)
         logging.error(data_response.text)
         problem = {'type': 'DataError',
                    'title': 'Error requesting data',
