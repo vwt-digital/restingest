@@ -10,3 +10,4 @@ connexion==2.0.2
 requests-oauthlib==1.3.0
 Werkzeug==0.16.0
 Flask-Cors==3.0.8
+swagger-ui-bundle==0.0.2
