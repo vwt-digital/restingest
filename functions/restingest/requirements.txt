@@ -3,7 +3,6 @@ google-cloud-kms==1.4.0
 google-cloud-storage==1.29.0
 google-cloud-secret-manager==1.0.0
 Flask==1.1.1
-defusedxml==0.6.0
 lxml==4.5.0
 jwkaas==0.4
 connexion==2.0.2
@@ -11,3 +10,4 @@ requests-oauthlib==1.3.0
 Werkzeug==0.16.0
 Flask-Cors==3.0.8
 swagger-ui-bundle==0.0.2
+defusedxml==0.6.0

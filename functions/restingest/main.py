@@ -10,8 +10,8 @@ from flask import make_response
 from requests_oauthlib import OAuth1
 
 from openapi_server import connexion_app
-from xml.sax.saxutils import escape
-from xml.etree import ElementTree
+from xml.sax.saxutils import escape  # nosec - Doesn't escape values from external file
+from defusedxml import ElementTree
 
 
 def get_authentication_secret():
