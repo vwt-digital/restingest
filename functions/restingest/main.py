@@ -1,29 +1,35 @@
-import logging
 import os
-import base64
-
-import requests
-import config
 import json
-
-from xml.etree import ElementTree
-from google.cloud import kms_v1
+import utils
+import config
+import logging
+import requests
 
 from flask import jsonify
 from flask import make_response
 from requests_oauthlib import OAuth1
 
 from openapi_server import connexion_app
-from xml.sax.saxutils import escape
+from xml.sax.saxutils import escape  # nosec - Doesn't escape values from external file
+from defusedxml import ElementTree
 
 
 def get_authentication_secret():
-    authentication_secret_encrypted = base64.b64decode(os.environ['AUTHENTICATION_SECRET_ENCRYPTED'])
-    kms_client = kms_v1.KeyManagementServiceClient()
-    crypto_key_name = kms_client.crypto_key_path_path(os.environ['PROJECT_ID'], os.environ['KMS_REGION'], os.environ['KMS_KEYRING'],
-                                                      os.environ['KMS_KEY'])
-    decrypt_response = kms_client.decrypt(crypto_key_name, authentication_secret_encrypted)
-    return decrypt_response.plaintext.decode("utf-8").replace('\n', '')
+
+    if os.environ.get('SECRET_NAME'):
+        payload = utils.get_secret(
+            os.environ['PROJECT_ID'],
+            os.environ['SECRET_NAME']
+        )
+    else:
+        payload = utils.decrypt_secret(
+            os.environ['PROJECT_ID'],
+            os.environ['KMS_REGION'],
+            os.environ['KMS_KEYRING'],
+            os.environ['KMS_KEY'],
+            os.environ['AUTHENTICATION_SECRET_ENCRYPTED'])
+
+    return payload
 
 
 def gather_authorization_headers(request_def):
