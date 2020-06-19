@@ -2,6 +2,7 @@ import logging
 import datetime
 import json
 import mimetypes
+import requests
 
 from flask import jsonify
 from flask import make_response
@@ -96,6 +97,9 @@ def generic_post(body):
             raise ValueError('No correct body provided.')
 
         return make_response(jsonify({'path': destination_path}), 201)
+    except requests.exceptions.ConnectionError as error:
+        logging.error(f"An exception occurred when uploading: {str(error)}")
+        return make_response(jsonify(str(error)), 400)
     except Exception as error:
         logging.exception(error)
         return make_response(jsonify(str(error)), 400)
