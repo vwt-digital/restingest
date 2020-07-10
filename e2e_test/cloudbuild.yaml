@@ -6,8 +6,8 @@ steps:
     args:
       - '-c'
       - |
-        cp gcloud/openapi.yaml ../functions/restingest/openapi_server/openapi.yaml
-        cp gcloud/config.py ../functions/restingest/config.py
+        cp e2e_test/gcloud/openapi.yaml functions/restingest/openapi_server/openapi.yaml
+        cp e2e_test/gcloud/config.py functions/restingest/config.py
         gcloud functions deploy ${PROJECT_ID}-ingest-func \
         --entry-point=http_receive_store_blob_trigger_func \
         --update-env-vars=[STORAGE_BUCKET=$_STORAGE_BUCKET] \
