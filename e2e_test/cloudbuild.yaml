@@ -10,7 +10,7 @@ steps:
         cp gcloud/config.py ../functions/restingest/config.py
         gcloud functions deploy ${PROJECT_ID}-ingest-func \
         --entry-point=http_receive_store_blob_trigger_func \
-        --update-env-vars=[STORAGE_BUCKET=$_STORAGE_BUCKET]
+        --update-env-vars=[STORAGE_BUCKET=$_STORAGE_BUCKET] \
         --runtime=python37 \
         --trigger-http \
         --project=${PROJECT_ID} \
