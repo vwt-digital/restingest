@@ -1,13 +1,20 @@
 ---
 steps:
+  # Clone restingest repository
+  - name: 'gcr.io/cloud-builders/git'
+    args:
+      - 'clone'
+      - '--branch=${BRANCH_NAME}'
+      - 'https://github.com/vwt-digital/restingest.git'
   # setup gcloud testing
   - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        cp e2e_test/gcloud/openapi.yaml functions/restingest/openapi_server/openapi.yaml
-        cp e2e_test/gcloud/config.py functions/restingest/config.py
+        cd /workspace
+        cp restingest/e2e_test/gcloud/openapi.yaml restingest/functions/restingest/openapi_server/openapi.yaml
+        cp restingest/e2e_test/gcloud/config.py restingest/functions/restingest/config.py
         gcloud functions deploy ${PROJECT_ID}-ingest-func \
         --entry-point=http_receive_store_blob_trigger_func \
         --update-env-vars=[STORAGE_BUCKET=$_STORAGE_BUCKET] \
