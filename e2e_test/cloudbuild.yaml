@@ -4,25 +4,58 @@ steps:
   - name: 'gcr.io/cloud-builders/git'
     args:
       - 'clone'
-      - '--branch=${BRANCH_NAME}'
+      - '--branch=develop'
       - 'https://github.com/vwt-digital/restingest.git'
-  # setup gcloud testing
+
+  # Copy config to cloud functions
   - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
+    id: 'copy config'
     args:
       - '-c'
       - |
-        cd /workspace
-        cp restingest/e2e_test/gcloud/openapi.yaml restingest/functions/restingest/openapi_server/openapi.yaml
-        cp restingest/e2e_test/gcloud/config.py restingest/functions/restingest/config.py
-        gcloud functions deploy ${PROJECT_ID}-ingest-func \
+        cp -r restingest/functions/restingest prepareconfig
+        cp restingest/e2e_test/gcloud/openapi.yaml prepareconfig/openapi_server/openapi/openapi.yaml
+        cp restingest/e2e_test/gcloud/config.py prepareconfig/config.py
+
+  # Deploy restingest function to get data
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'bash'
+    id: 'deploy & call test'
+    args:
+      - '-c'
+      - |
+        gcloud functions deploy \
+        ${PROJECT_ID}-ingest-func \
         --entry-point=http_receive_store_blob_trigger_func \
-        --update-env-vars=[STORAGE_BUCKET=$_STORAGE_BUCKET] \
         --runtime=python37 \
         --trigger-http \
+        --timeout=480 \
+        --memory=2048MB \
         --project=${PROJECT_ID} \
-        --region=europe-west1
-    dir: '../functions/restingest'
+        --region=europe-west1 \
+        --set-env-vars=PROJECT_ID=${PROJECT_ID}
+<<<<<<< Updated upstream
+        gcloud functions add-iam-policy-binding ${PROJECT_ID}-ingest-func --region=europe-west1 --member="allUsers" --role="roles/cloudfunctions.invoker"
+=======
+>>>>>>> Stashed changes
+    dir: 'prepareconfig'
+
+#  # setup gcloud testing
+#  - name: 'gcr.io/cloud-builders/gcloud'
+#    entrypoint: 'bash'
+#    args:
+#      - '-c'
+#      - |
+#        cd /workspace
+#        gcloud functions deploy ${PROJECT_ID}-ingest-func \
+#        --entry-point=http_receive_store_blob_trigger_func \
+#        --update-env-vars=[STORAGE_BUCKET=$_STORAGE_BUCKET] \
+#        --runtime=python37 \
+#        --trigger-http \
+#        --project=${PROJECT_ID} \
+#        --region=europe-west1
+#    dir: '../functions/restingest'
 
 substitutions:
   _STORAGE_BUCKET: "Please set substitution _STORAGE_BUCKET in cloudbuild file"
