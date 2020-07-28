@@ -35,10 +35,6 @@ steps:
         --project=${PROJECT_ID} \
         --region=europe-west1 \
         --set-env-vars=PROJECT_ID=${PROJECT_ID}
-<<<<<<< Updated upstream
-        gcloud functions add-iam-policy-binding ${PROJECT_ID}-ingest-func --region=europe-west1 --member="allUsers" --role="roles/cloudfunctions.invoker"
-=======
->>>>>>> Stashed changes
     dir: 'prepareconfig'
 
 #  # setup gcloud testing
