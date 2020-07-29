@@ -37,21 +37,7 @@ steps:
         --set-env-vars=PROJECT_ID=${PROJECT_ID}
     dir: 'prepareconfig'
 
-#  # setup gcloud testing
-#  - name: 'gcr.io/cloud-builders/gcloud'
-#    entrypoint: 'bash'
-#    args:
-#      - '-c'
-#      - |
-#        cd /workspace
-#        gcloud functions deploy ${PROJECT_ID}-ingest-func \
-#        --entry-point=http_receive_store_blob_trigger_func \
-#        --update-env-vars=[STORAGE_BUCKET=$_STORAGE_BUCKET] \
-#        --runtime=python37 \
-#        --trigger-http \
-#        --project=${PROJECT_ID} \
-#        --region=europe-west1
-#    dir: '../functions/restingest'
-
 substitutions:
-  _STORAGE_BUCKET: "Please set substitution _STORAGE_BUCKET in cloudbuild file"
+  _STORAGE_BUCKET: "Please_set_substitution_'_STORAGE_BUCKET'_in_cloudbuild_file"
+options:
+  substitutionOption: ALLOW_LOOSE
