@@ -48,7 +48,7 @@ steps:
       - '-c'
       - |
         gcloud functions deploy \
-        ${PROJECT_ID}-ingest-func \
+        ${PROJECT_ID}-request-ingest-func \
         --entry-point=http_request_store_blob_trigger_func \
         --runtime=python37 \
         --trigger-http \
