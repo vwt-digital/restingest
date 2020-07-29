@@ -14,12 +14,12 @@ steps:
     args:
       - '-c'
       - |
-        cp -r restingest/functions/restingest prepareconfig
+        cp -r restingest/functions/restingest postconfig
         cp -r restingest/functions/restingest getconfig
-        cp restingest/e2e_test/gcloud/openapi.yaml prepareconfig/openapi_server/openapi/openapi.yaml
-        cp restingest/e2e_test/gcloud/openapi.yaml getconfig/openapi_server/openapi/openapi.yaml
-        cp restingest/e2e_test/gcloud/config.py prepareconfig/config.py
-        cp restingest/e2e_test/gcloud/get.config.py getconfig/config.py
+        cp restingest/e2e_test/openapi.yaml postconfig/openapi_server/openapi/openapi.yaml
+        cp restingest/e2e_test/openapi.yaml getconfig/openapi_server/openapi/openapi.yaml
+        cp restingest/e2e_test/config.py postconfig/config.py
+        cp restingest/e2e_test/get.config.py getconfig/config.py
 
   # Deploy restingest function to set data
   - name: 'gcr.io/cloud-builders/gcloud'
