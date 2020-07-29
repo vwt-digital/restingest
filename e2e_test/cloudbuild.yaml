@@ -16,8 +16,8 @@ steps:
       - |
         cp -r restingest/functions/restingest postconfig
         cp -r restingest/functions/restingest getconfig
-        cp restingest/e2e_test/openapi.yaml postconfig/openapi_server/openapi/openapi.yaml
-        cp restingest/e2e_test/openapi.yaml getconfig/openapi_server/openapi/openapi.yaml
+        cp restingest/e2e_test/post.openapi.yaml postconfig/openapi_server/openapi/openapi.yaml
+        cp restingest/e2e_test/get.openapi.yaml getconfig/openapi_server/openapi/openapi.yaml
         cp restingest/e2e_test/post.config.py postconfig/config.py
         cp restingest/e2e_test/get.config.py getconfig/config.py
 
@@ -57,6 +57,8 @@ steps:
         --project=${PROJECT_ID} \
         --region=europe-west1 \
         --set-env-vars=PROJECT_ID=${PROJECT_ID},STORAGE_BUCKET=$_STORAGE_BUCKET
+        echo '{ "bindings": [ { "members": [ "serviceAccount:${PROJECT_ID}@appspot.gserviceaccount.com" ], "role": "roles/cloudfunctions.invoker" } ] }' > consume_func_permissions.json
+        gcloud beta functions set-iam-policy ${PROJECT_ID}-ingest-func --region=europe-west1 --project=${PROJECT_ID} consume_func_permissions.json
     dir: 'getconfig'
 
 substitutions:
