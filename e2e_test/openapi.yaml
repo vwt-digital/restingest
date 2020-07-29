@@ -25,18 +25,18 @@ paths:
           description: Successful response.
       x-codegen-request-body-name: body
       x-openapi-router-controller: openapi_server.controllers.default_controller
-  /store-xml:
-    post:
-      summary: Store some data
-      description: Store the posted data
-      operationId: generic_post
-      requestBody:
-        description: A new XML document to be stored.
-        content:
-          application/xml: {}
-        required: true
-      responses:
-        200:
-          description: Successful response.
-      x-codegen-request-body-name: body
-      x-openapi-router-controller: openapi_server.controllers.default_controller
+#  /store-xml:
+#    post:
+#      summary: Store some data
+#      description: Store the posted data
+#      operationId: generic_post
+#      requestBody:
+#        description: A new XML document to be stored.
+#        content:
+#          application/xml: {}
+#        required: true
+#      responses:
+#        200:
+#          description: Successful response.
+#      x-codegen-request-body-name: body
+#      x-openapi-router-controller: openapi_server.controllers.default_controller
