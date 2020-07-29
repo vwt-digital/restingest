@@ -17,6 +17,7 @@ steps:
         cp -r restingest/functions/restingest prepareconfig
         cp restingest/e2e_test/gcloud/openapi.yaml prepareconfig/openapi_server/openapi/openapi.yaml
         cp restingest/e2e_test/gcloud/config.py prepareconfig/config.py
+        export STORAGE_BUCKET=$_STORAGE_BUCKET
 
   # Deploy restingest function to get data
   - name: 'gcr.io/cloud-builders/gcloud'
@@ -39,5 +40,3 @@ steps:
 
 substitutions:
   _STORAGE_BUCKET: "Please_set_substitution_'_STORAGE_BUCKET'_in_cloudbuild_file"
-env:
-  'STORAGE_BUCKET=_STORAGE_BUCKET'
