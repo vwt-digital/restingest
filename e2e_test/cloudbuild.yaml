@@ -29,7 +29,7 @@ steps:
       - '-c'
       - |
         gcloud functions deploy \
-        ${PROJECT_ID}-ingest-func \
+        ${PROJECT_ID}-receive-ingest-func \
         --entry-point=http_receive_store_blob_trigger_func \
         --runtime=python37 \
         --trigger-http \
@@ -38,7 +38,7 @@ steps:
         --project=${PROJECT_ID} \
         --region=europe-west1 \
         --set-env-vars=PROJECT_ID=${PROJECT_ID},STORAGE_BUCKET=$_STORAGE_BUCKET
-    dir: 'prepareconfig'
+    dir: 'postconfig'
 
   # Deploy restingest function to get data
   - name: 'gcr.io/cloud-builders/gcloud'
