@@ -39,5 +39,5 @@ steps:
 
 substitutions:
   _STORAGE_BUCKET: "Please_set_substitution_'_STORAGE_BUCKET'_in_cloudbuild_file"
-options:
-  substitutionOption: ALLOW_LOOSE
+env:
+  'STORAGE_BUCKET=_STORAGE_BUCKET'
