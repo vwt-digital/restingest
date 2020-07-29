@@ -6,7 +6,7 @@ BASE_PATH = 'test/e2e'
 
 # Uncomment to activate timer download functions from specified url
 URL_COLLECTIONS = {
-    'e2e_get_test': {
+    'generics': {
         'method': 'GET',
         'url': 'https://jsonplaceholder.typicode.com/todos/1'
     }
