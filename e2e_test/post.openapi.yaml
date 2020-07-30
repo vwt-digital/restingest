@@ -19,7 +19,12 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/json"
+              type: object
+              properties:
+                ID:
+                  type: integer
+                  format: int64
+                  minimum: 1
         required: true
       responses:
         201:
@@ -41,12 +46,3 @@ paths:
           description: Successful response.
       x-codegen-request-body-name: body
       x-openapi-router-controller: openapi_server.controllers.default_controller
-components:
-  schemas:
-    json:
-      type: object
-      properties:
-        ID:
-          type: integer
-          format: int64
-          minimum: 1
