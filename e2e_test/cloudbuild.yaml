@@ -61,5 +61,12 @@ steps:
         gcloud beta functions set-iam-policy ${PROJECT_ID}-ingest-func --region=europe-west1 --project=${PROJECT_ID} consume_func_permissions.json
     dir: 'getconfig'
 
+  # Run E2E tests
+  - name: python:3.7
+    entrypoint: 'python'
+    id: 'run E2E tests'
+    args: ["python", "-m", "unittest", "discover", "--verbose", "-p", "test.py", "restingest/e2e_test/"]
+
+
 substitutions:
   _STORAGE_BUCKET: "Please_set_substitution_'_STORAGE_BUCKET'_in_cloudbuild_file"
