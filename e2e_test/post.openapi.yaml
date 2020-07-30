@@ -14,7 +14,7 @@ paths:
     post:
       summary: Store some json
       description: Store the posted json data
-      operationId: generic_json_post
+      operationId: generic_post
       requestBody:
         content:
           application/json:
@@ -35,7 +35,7 @@ paths:
     post:
       summary: Store some xml
       description: Store the posted xml data
-      operationId: xml_post
+      operationId: generic_post2
       requestBody:
         description: A new XML document to be stored.
         content:
