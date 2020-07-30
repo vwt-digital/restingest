@@ -10,10 +10,26 @@ info:
 servers:
   - url: /
 paths:
+  /store-json:
+    post:
+      summary: Store some json
+      description: Store the posted json data
+      operationId: generic_post
+      requestBody:
+        content:
+          applicaion/json:
+            schema:
+              $ref: "#/components/schemas/json"
+        required: true
+      responses:
+        201:
+          description: Successful response.
+      x-codegen-request-body-name: body
+      x-openapi-router-controller: openapi_server.controllers.default_controller
   /store-xml:
     post:
-      summary: Store some data
-      description: Store the posted data
+      summary: Store some xml
+      description: Store the posted xml data
       operationId: generic_post
       requestBody:
         description: A new XML document to be stored.
@@ -21,7 +37,16 @@ paths:
           application/xml: {}
         required: true
       responses:
-        200:
+        201:
           description: Successful response.
       x-codegen-request-body-name: body
       x-openapi-router-controller: openapi_server.controllers.default_controller
+components:
+  schemas:
+    json:
+      type: object
+      properties:
+        ID:
+          type: integer
+          format: int64
+          minimum: 1
