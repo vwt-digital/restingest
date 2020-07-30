@@ -17,7 +17,7 @@ paths:
       operationId: generic_post
       requestBody:
         content:
-          applicaion/json:
+          application/json:
             schema:
               $ref: "#/components/schemas/json"
         required: true
