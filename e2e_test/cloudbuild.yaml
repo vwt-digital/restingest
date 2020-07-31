@@ -7,13 +7,6 @@ steps:
       - '--branch=develop'
       - 'https://github.com/vwt-digital/restingest.git'
 
-  # Install test requirements
-  - name: 'gcr.io/cloud-builders/gcloud'
-    id: 'install requirements'
-    dir: 'restingest/e2e_test'
-    entrypoint: 'python'
-    args: ['-m', 'pip', 'install', '-r', 'requirements-test.txt']
-
   # Copy config to cloud functions
   - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
@@ -70,10 +63,14 @@ steps:
 
   # Run E2E tests
   - name: 'gcr.io/cloud-builders/gcloud'
-    entrypoint: 'python'
-    dir: 'restingest/e2e_test/'
+    entrypoint: 'bash'
     id: 'run E2E tests'
-    args: ["-m", "unittest", "discover", "--verbose", "-p", "test.py", "${PROJECT_ID}"]
+    dir: 'restingest/e2e_test/'
+    args:
+      - '-c'
+      - |
+        python -m pip install -r restingest/e2e_test/requirements-test.txt
+        python -m unittest discover --verbose -p test.py "${PROJECT_ID}"
 
 
 substitutions:
