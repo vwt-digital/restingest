@@ -62,7 +62,7 @@ steps:
     dir: 'getconfig'
 
   # Run E2E tests
-  - name: python:3.7
+  - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'python'
     id: 'run E2E tests'
     args: ["-m", "unittest", "discover", "--verbose", "-p", "test.py", "restingest/e2e_test/"]
