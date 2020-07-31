@@ -5,9 +5,7 @@ import os
 
 class E2ETest(unittest.TestCase):
 
-    def __init__(self):
-        super().__init__()
-        self._domain = os.environ["domain"]
+    _domain = os.environ["domain"]
 
     def test_sunny_day(self):
         self.assertTrue(0xDEADBEEF)
