@@ -16,10 +16,10 @@ steps:
       - |
         cp -r restingest/functions/restingest postconfig
         cp -r restingest/functions/restingest getconfig
-        cp restingest/e2e_test/post.openapi.yaml postconfig/openapi_server/openapi/openapi.yaml
-        cp restingest/e2e_test/get.openapi.yaml getconfig/openapi_server/openapi/openapi.yaml
-        cp restingest/e2e_test/post.config.py postconfig/config.py
-        cp restingest/e2e_test/get.config.py getconfig/config.py
+        cp restingest/e2e_test/config/post.openapi.yaml postconfig/openapi_server/openapi/openapi.yaml
+        cp restingest/e2e_test/config/get.openapi.yaml getconfig/openapi_server/openapi/openapi.yaml
+        cp restingest/e2e_test/config/post.config.py postconfig/config.py
+        cp restingest/e2e_test/config/get.config.py getconfig/config.py
 
   # Deploy restingest function for posting/receiving data
   - name: 'gcr.io/cloud-builders/gcloud'
