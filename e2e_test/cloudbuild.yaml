@@ -21,10 +21,10 @@ steps:
         cp restingest/e2e_test/post.config.py postconfig/config.py
         cp restingest/e2e_test/get.config.py getconfig/config.py
 
-  # Deploy restingest function to set data
+  # Deploy restingest function for posting/receiving data
   - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
-    id: 'deploy & set test'
+    id: 'deploy post/receive test'
     args:
       - '-c'
       - |
@@ -40,10 +40,10 @@ steps:
         --set-env-vars=PROJECT_ID=${PROJECT_ID},STORAGE_BUCKET=$_STORAGE_BUCKET
     dir: 'postconfig'
 
-  # Deploy restingest function to get data
+  # Deploy restingest function to getting/requesting data
   - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
-    id: 'deploy & get test'
+    id: 'deploy get/request test'
     args:
       - '-c'
       - |
