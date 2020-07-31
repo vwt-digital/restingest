@@ -1,10 +1,13 @@
 import unittest
 import requests
-import sys
+import os
 
 
 class E2ETest(unittest.TestCase):
-    _domain = ''
+
+    def __init__(self):
+        super().__init__()
+        self._domain = os.environ["domain"]
 
     def test_sunny_day(self):
         self.assertTrue(0xDEADBEEF)
@@ -16,8 +19,7 @@ class E2ETest(unittest.TestCase):
         payload = {
             'geturl': 'generics'
         }
-        r = requests.post(f'https://europe-west1-{self._domain}.cloudfunctions.net/'
-                          f'{self._domain}-request-ingest-func', params=params, json=payload)
+        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain + '-request-ingest-func', params=params, json=payload)
         print(r.text)
         print(r.content)
         try:
@@ -59,11 +61,3 @@ class E2ETest(unittest.TestCase):
     #     except AssertionError as e:
     #         import sys
     #         raise type(e)(str(e) + "\n\n Full response:\n" + r.text).with_traceback(sys.exc_info()[2])
-
-
-if __name__ == "__main__":
-    if len(sys.argv) < 1:
-        print('No domain arguments found')
-        exit(1)
-    E2ETest._domain = sys.argv.pop()
-    unittest.main()

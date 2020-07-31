@@ -68,8 +68,9 @@ steps:
     args:
       - '-c'
       - |
+        export domain="${PROJECT_ID}"
         python -m pip install -r restingest/e2e_test/requirements-test.txt
-        python -m unittest discover --verbose -p test.py restingest/e2e_test/ "${PROJECT_ID}"
+        python -m unittest discover --verbose -p test.py restingest/e2e_test/
 
 
 substitutions:
