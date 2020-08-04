@@ -52,7 +52,7 @@ class E2ETest(unittest.TestCase):
 
     def test_post_json_no_auth_schema_neg(self):
         payload = {
-            'NOT_ID': 3
+            'NOT_ID': "test"
         }
 
         r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
