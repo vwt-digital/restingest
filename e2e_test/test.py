@@ -52,8 +52,7 @@ class E2ETest(unittest.TestCase):
 
     def test_post_json_no_auth_schema_neg(self):
         payload = {
-            'ID': 3,
-            'superfluous': "This is one more argument than the openapi description accepts"
+            'NOT_ID': 3
         }
 
         r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
