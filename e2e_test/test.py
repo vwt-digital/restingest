@@ -23,8 +23,7 @@ class E2ETest(unittest.TestCase):
     #     try:
     #         self.assertTrue(199 < r.status_code < 300)
     #     except AssertionError as e:
-    #         import sys
-    #         raise type(e)(str(e) + "\n\n Full response:\n" + r.text).with_traceback(sys.exc_info()[2])
+    #         raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
 
     def test_post_json_no_auth_generic_pos(self):
         payload = {
@@ -62,5 +61,4 @@ class E2ETest(unittest.TestCase):
         try:
             self.assertFalse(199 < r.status_code < 300)
         except AssertionError as e:
-            import sys
-            raise type(e)(str(e) + "\n\n Full response:\n" + r.text).with_traceback(sys.exc_info()[2])
+            raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
