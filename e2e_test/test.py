@@ -50,14 +50,22 @@ class E2ETest(unittest.TestCase):
         except AssertionError as e:
             raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
 
-    def test_post_json_no_auth_schema_neg(self):
-        payload = {
-            'NOT_ID': "test"
-        }
-
+    def test_post_json_no_auth_no_payload(self):
         r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-receive-ingest-func/store-json', json=payload)
+                          '-receive-ingest-func/store-json')
         try:
             self.assertFalse(199 < r.status_code < 300)
         except AssertionError as e:
             raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
+
+    # def test_post_json_no_auth_schema_neg(self):
+    #     payload = {
+    #         'NOT_ID': "test"
+    #     }
+    #
+    #     r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
+    #                       '-receive-ingest-func/store-json', json=payload)
+    #     try:
+    #         self.assertFalse(199 < r.status_code < 300)
+    #     except AssertionError as e:
+    #         raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
