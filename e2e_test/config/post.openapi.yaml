@@ -25,6 +25,8 @@ paths:
                   type: integer
                   format: int64
                   minimum: 1
+              required:
+                - ID
         required: true
       responses:
         201:
