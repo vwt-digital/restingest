@@ -72,7 +72,7 @@ steps:
       - |
         export domain="${PROJECT_ID}"
         python -m pip install -r restingest/e2e_test/requirements-test.txt
-        python -m unittest discover --verbose -p test.py restingest/e2e_test/ || echo "E2E tests failed"
+        python -m unittest discover --verbose -p test.py restingest/e2e_test/ || touch /workspace/persistent_failure_file
 
   # Delete restingest functions after tests have run
   - name: 'gcr.io/cloud-builders/gcloud'
@@ -83,6 +83,14 @@ steps:
       - |
         gcloud functions delete ${PROJECT_ID}-receive-ingest-func --quiet
         gcloud functions delete ${PROJECT_ID}-request-ingest-func --quiet
+
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'bash'
+    id: 'Fail on test failure after function deletion'
+    args:
+      - '-c'
+      - |
+        ! test -f /workspace/persistent_failure_file
 
 substitutions:
   _STORAGE_BUCKET: "Please_set_substitution_'_STORAGE_BUCKET'_in_cloudbuild_file"
