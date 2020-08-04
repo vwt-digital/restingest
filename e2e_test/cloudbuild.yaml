@@ -63,6 +63,7 @@ steps:
     dir: 'getconfig'
 
   # Run E2E tests
+  # Continue on failure to guarantee functions get deleted
   - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
     id: 'run E2E tests'
@@ -71,8 +72,17 @@ steps:
       - |
         export domain="${PROJECT_ID}"
         python -m pip install -r restingest/e2e_test/requirements-test.txt
-        python -m unittest discover --verbose -p test.py restingest/e2e_test/
+        python -m unittest discover --verbose -p test.py restingest/e2e_test/ || echo "E2E tests failed"
 
+  # Delete restingest functions after tests have run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'bash'
+    id: 'run E2E tests'
+    args:
+      - '-c'
+      - |
+        gcloud functions delete ${PROJECT_ID}-receive-ingest-func
+        gcloud functions delete ${PROJECT_ID}-request-ingest-func
 
 substitutions:
   _STORAGE_BUCKET: "Please_set_substitution_'_STORAGE_BUCKET'_in_cloudbuild_file"
