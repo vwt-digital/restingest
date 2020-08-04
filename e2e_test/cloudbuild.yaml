@@ -77,7 +77,7 @@ steps:
   # Delete restingest functions after tests have run
   - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
-    id: 'run E2E tests'
+    id: 'Delete restingest functions'
     args:
       - '-c'
       - |
