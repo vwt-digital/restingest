@@ -11,7 +11,7 @@ class E2ETest(unittest.TestCase):
 
     def test_get_json_stg_store_generic(self):
         params = {
-            'geturl': 'httpbin.org/get?testresp=test',
+            'geturl': 'generics',
             'storepath': 'generics'
         }
         r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
