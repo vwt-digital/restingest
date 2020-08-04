@@ -81,8 +81,8 @@ steps:
     args:
       - '-c'
       - |
-        gcloud functions delete ${PROJECT_ID}-receive-ingest-func
-        gcloud functions delete ${PROJECT_ID}-request-ingest-func
+        gcloud functions delete ${PROJECT_ID}-receive-ingest-func --quiet
+        gcloud functions delete ${PROJECT_ID}-request-ingest-func --quiet
 
 substitutions:
   _STORAGE_BUCKET: "Please_set_substitution_'_STORAGE_BUCKET'_in_cloudbuild_file"
