@@ -81,8 +81,8 @@ steps:
     args:
       - '-c'
       - |
-        gcloud functions delete ${PROJECT_ID}-receive-ingest-func --quiet
-        gcloud functions delete ${PROJECT_ID}-request-ingest-func --quiet
+        gcloud functions delete ${PROJECT_ID}-receive-ingest-func --region europe-west1 --quiet
+        gcloud functions delete ${PROJECT_ID}-request-ingest-func --region europe-west1 --quiet
 
   - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
