@@ -50,6 +50,7 @@ steps:
       - |
         gcloud functions deploy \
         ${PROJECT_ID}-request-ingest-func \
+        --allow-unauthenticated \
         --entry-point=http_request_store_blob_trigger_func \
         --runtime=python37 \
         --trigger-http \
