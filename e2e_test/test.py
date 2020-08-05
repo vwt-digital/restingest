@@ -107,7 +107,25 @@ class E2ETest(unittest.TestCase):
             raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
 
     def test_post_xml_no_auth_data_type_neg(self):
-        payload = {"json": "test"}
+        payload = """
+<html>
+    <head></head>
+    <body>
+        <something:script xmlns:something="http://www.w3.org/1999/xhtml">alert(1)</something:script>
+        <a:script xmlns:a="http://www.w3.org/1999/xhtml">alert(2)</a:script>
+        <info>
+          <name>
+            <value><![CDATA[<script>confirm(document.domain)</script>]]></value>
+          </name>
+            <description>
+              <value>Hello</value>
+            </description>
+            <url>
+              <value>http://w3.org</value>
+            </url>
+        </info>
+    </body>
+</html>"""
 
         headers = {'Content-type': 'application/json'}
         r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
