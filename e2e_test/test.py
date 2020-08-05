@@ -40,6 +40,38 @@ class E2ETest(unittest.TestCase):
         except AssertionError as e:
             raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
 
+    def test_get_json_stg_store_invalid_parameter_values(self):
+        """
+        Creates post request with parameter to get json and stores into storage in base path.
+        Slightly defected functionality, should fail.
+        """
+        params = {
+            'geturl': 1,
+            'storepath': '"ccc\'AAAAAAAAAAAaaaaaaaaaaaaaaaaaaaEEEEEEEEEeeeeeeeeeeeee@@@@@@@@@@@@@@@@@@\''
+        }
+        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
+                          '-request-ingest-func', params=params)
+        try:
+            self.assertFalse(199 < r.status_code < 300)
+        except AssertionError as e:
+            raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
+
+    def test_get_json_stg_store_invalid_parameter_names(self):
+        """
+        Creates post request with parameter to get json and stores into storage in base path.
+        Slightly defected functionality, should fail.
+        """
+        params = {
+            'NO_ID': 'no_id',
+            'Args': 'args'
+        }
+        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
+                          '-request-ingest-func', params=params)
+        try:
+            self.assertFalse(199 < r.status_code < 300)
+        except AssertionError as e:
+            raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
+
     def test_get_json_stg_store_no_params(self):
         """
         Creates post request without parameters to get json and stores into storage.
@@ -65,49 +97,6 @@ class E2ETest(unittest.TestCase):
                           '-request-ingest-func', params=params)
         try:
             self.assertTrue(199 < r.status_code < 300)
-        except AssertionError as e:
-            raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
-
-    def test_get_xml_stg_store_no_storage_path(self):
-        """
-        Creates post request with parameter to get xml and stores into storage in base path.
-        Slightly defective functionality, should fail.
-        """
-        params = {
-            'geturl': 'generics-xml',
-        }
-        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-request-ingest-func', params=params)
-        try:
-            self.assertFalse(199 < r.status_code < 300)
-        except AssertionError as e:
-            raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
-
-    def test_get_xml_stg_store_no_params(self):
-        """
-        Creates post request without parameters to get xml and stores into storage.
-        No parameters passed, should fail.
-        """
-        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-request-ingest-func')
-        try:
-            self.assertFalse(199 < r.status_code < 300)
-        except AssertionError as e:
-            raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
-
-    def test_get_html_stg_store_generic(self):
-        """
-        Creates post request with parameters to get html and stores into storage in specific path.
-        Should not allow html to be requested & stored
-        """
-        params = {
-            'geturl': 'generics-html',
-            'storepath': 'generics'
-        }
-        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-request-ingest-func', params=params)
-        try:
-            self.assertFalse(199 < r.status_code < 300)
         except AssertionError as e:
             raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
 
