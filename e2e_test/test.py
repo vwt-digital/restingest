@@ -117,3 +117,22 @@ class E2ETest(unittest.TestCase):
             self.assertFalse(199 < r.status_code < 300)
         except AssertionError as e:
             raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
+
+    def test_post_xml_temp_vuln(self):
+        payload = """
+<html>
+    <head></head>
+    <body>
+        <something:script xmlns:something="http://www.w3.org/1999/xhtml">alert("deze pagina redirect nu naar w3.org")</something:script>
+        <a:script type="text/javascript" xmlns:a="http://www.w3.org/1999/xhtml">window.location = "https://w3.org"</a:script>
+    </body>
+</html>"""
+
+        headers = {'Content-type': 'application/xml'}
+        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
+                          '-receive-ingest-func/store-xml', data=payload, headers=headers)
+
+        try:
+            self.assertTrue(199 < r.status_code < 300)
+        except AssertionError as e:
+            raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
