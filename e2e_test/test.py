@@ -15,7 +15,7 @@ class E2ETest(unittest.TestCase):
         Generic functionality, should pass.
         """
         params = {
-            'geturl': 'generics',
+            'geturl': 'generics-json',
             'storepath': 'generics'
         }
         r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
@@ -31,7 +31,7 @@ class E2ETest(unittest.TestCase):
         Slightly defected functionality, should fail.
         """
         params = {
-            'geturl': 'generics',
+            'geturl': 'generics-json',
         }
         r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
                           '-request-ingest-func', params=params)
@@ -43,6 +43,49 @@ class E2ETest(unittest.TestCase):
     def test_get_json_stg_store_no_params(self):
         """
         Creates post request without parameters to get json and stores into storage.
+        No parameters passed, should fail.
+        """
+        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
+                          '-request-ingest-func')
+        try:
+            self.assertFalse(199 < r.status_code < 300)
+        except AssertionError as e:
+            raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
+
+    def test_get_xml_stg_store_generic(self):
+        """
+        Creates post request with parameters to get xml and stores into storage in specific path.
+        Generic functionality, should pass.
+        """
+        params = {
+            'geturl': 'generics-xml',
+            'storepath': 'generics'
+        }
+        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
+                          '-request-ingest-func', params=params)
+        try:
+            self.assertTrue(199 < r.status_code < 300)
+        except AssertionError as e:
+            raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
+
+    def test_get_xml_stg_store_no_storage_path(self):
+        """
+        Creates post request with parameter to get xml and stores into storage in base path.
+        Slightly defected functionality, should fail.
+        """
+        params = {
+            'geturl': 'generics-xml',
+        }
+        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
+                          '-request-ingest-func', params=params)
+        try:
+            self.assertFalse(199 < r.status_code < 300)
+        except AssertionError as e:
+            raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
+
+    def test_get_xml_stg_store_no_params(self):
+        """
+        Creates post request without parameters to get xml and stores into storage.
         No parameters passed, should fail.
         """
         r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
