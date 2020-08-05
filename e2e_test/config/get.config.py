@@ -13,5 +13,9 @@ URL_COLLECTIONS = {
     'generics-xml': {
         'method': 'GET',
         'url': 'http://httpbin.org/xml'
+    },
+    'generics-html': {
+        'method': 'GET',
+        'url': 'http://httpbin.org/html'
     }
 }
