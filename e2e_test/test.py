@@ -28,7 +28,7 @@ class E2ETest(unittest.TestCase):
     def test_get_json_stg_store_no_storage_path(self):
         """
         Creates post request with parameter to get json and stores into storage in base path.
-        Slightly defected functionality, should fail.
+        No storepath is given, should fail.
         """
         params = {
             'geturl': 'generics-json',
@@ -43,7 +43,7 @@ class E2ETest(unittest.TestCase):
     def test_get_json_stg_store_invalid_parameter_values(self):
         """
         Creates post request with parameter to get json and stores into storage in base path.
-        Slightly defected functionality, should fail.
+        Invalid parameters are given, should fail.
         """
         params = {
             'geturl': 1,
@@ -59,7 +59,7 @@ class E2ETest(unittest.TestCase):
     def test_get_json_stg_store_invalid_parameter_names(self):
         """
         Creates post request with parameter to get json and stores into storage in base path.
-        Slightly defected functionality, should fail.
+        Invalid parameters are given, should fail.
         """
         params = {
             'NO_ID': 'no_id',
