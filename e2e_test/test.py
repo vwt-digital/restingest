@@ -28,7 +28,7 @@ class E2ETest(unittest.TestCase):
     def test_get_json_stg_store_no_storage_path(self):
         """
         Creates post request with parameter to get json and stores into storage in base path.
-        Slightly defected functionality, should pass.
+        Slightly defected functionality, should fail.
         """
         params = {
             'geturl': 'generics',
@@ -36,7 +36,7 @@ class E2ETest(unittest.TestCase):
         r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
                           '-request-ingest-func', params=params)
         try:
-            self.assertTrue(199 < r.status_code < 300)
+            self.assertFalse(199 < r.status_code < 300)
         except AssertionError as e:
             raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
 
