@@ -96,6 +96,9 @@ class E2ETest(unittest.TestCase):
             raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
 
     def test_post_json_no_auth_generic_pos(self):
+        """
+        Positive test with basic configuration
+        """
         payload = {
             'ID': 1
         }
@@ -123,6 +126,9 @@ class E2ETest(unittest.TestCase):
     #         raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
 
     def test_post_json_no_auth_path_neg(self):
+        """
+        Negative test for posting with no path
+        """
         payload = {
             'ID': 2
         }
@@ -134,7 +140,10 @@ class E2ETest(unittest.TestCase):
         except AssertionError as e:
             raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
 
-    def test_post_json_no_auth_no_payload(self):
+    def test_post_json_no_auth_no_payload_neg(self):
+        """
+        Negative test for posting without a request body (payload)
+        """
         r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
                           '-receive-ingest-func/store-json')
         try:
@@ -143,6 +152,9 @@ class E2ETest(unittest.TestCase):
             raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
 
     def test_post_json_no_auth_schema_neg(self):
+        """
+        Negative test for incorrect schema
+        """
         payload = {
             'NOT_ID': "test"
         }
@@ -155,6 +167,9 @@ class E2ETest(unittest.TestCase):
             raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
 
     def test_post_json_no_auth_data_type_neg(self):
+        """
+        Negative test which expects store-json to not accept xml
+        """
         payload = "test"
         headers = {'Content-type': 'text/xml'}
 
@@ -167,6 +182,9 @@ class E2ETest(unittest.TestCase):
             raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
 
     def test_post_xml_no_auth_generic_pos(self):
+        """
+        Positive test with basic config
+        """
         payload = "<?xml version='1.0' encoding='utf-8'?><test attr1='attr1'>0</test>"
         headers = {'Content-type': 'application/xml'}
 
@@ -179,6 +197,9 @@ class E2ETest(unittest.TestCase):
             raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
 
     def test_post_xml_no_auth_data_type_neg(self):
+        """
+        Negative test which expects store-xml to not accept application/json
+        """
         payload = {"json": "test"}
 
         headers = {"Content-type": "application/json"}
