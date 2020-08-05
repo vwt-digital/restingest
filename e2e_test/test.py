@@ -1,10 +1,10 @@
-import os
 import requests
 import unittest
 
 
 class E2ETest(unittest.TestCase):
-    _domain = os.environ["domain"]
+    # _domain = os.environ["domain"]
+    _domain = 'vwt-d-gew1-dat-restingest-test'
 
     def test_pos(self):
         self.assertTrue(0xDEADBEEF)
@@ -45,16 +45,21 @@ class E2ETest(unittest.TestCase):
         Creates post request with parameter to get json and stores into storage in base path.
         Invalid parameters are given, should fail.
         """
-        params = {
-            'geturl': 1,
-            'storepath': '"ccc\'AAAAAAAAAAAaaaaaaaaaaaaaaaaaaaEEEEEEEEEeeeeeeeeeeeee@@@@@@@@@@@@@@@@@@\''
-        }
-        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-request-ingest-func', params=params)
-        try:
-            self.assertFalse(199 < r.status_code < 300)
-        except AssertionError as e:
-            raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
+        get_url = 'generics-json'
+        key_store_path = 'storepath'
+        key_get_url = 'geturl'
+        param_list = {1: {key_get_url: 1, key_store_path: 'generics'}, 2: {key_get_url: get_url, key_store_path: '_'},
+                      3: {key_get_url: get_url,
+                          key_store_path: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaaaaaaaaaaaaaaaa'
+                                          '############@@@@AAAAAAAAAAAAEEEEEEEEEEEEEEEEEEEEEEEE '}}
+        for params in param_list.values():
+            print('Testing with geturl: ' + str(params['geturl']) + ' and storepath: ' + str(params['storepath']))
+            r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
+                              '-request-ingest-func', params=params)
+            try:
+                self.assertFalse(199 < r.status_code < 300)
+            except AssertionError as e:
+                raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
 
     def test_get_json_stg_store_invalid_parameter_names(self):
         """
