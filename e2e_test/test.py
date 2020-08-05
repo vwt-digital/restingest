@@ -109,7 +109,7 @@ class E2ETest(unittest.TestCase):
     def test_post_xml_no_auth_data_type_neg(self):
         payload = {"json": "test"}
 
-        headers = {"Content-type": "application/xml"}
+        headers = {"Content-type": "application/json"}
         r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
                           '-receive-ingest-func/store-xml', data=payload, headers=headers)
 
