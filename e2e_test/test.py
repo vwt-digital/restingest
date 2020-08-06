@@ -1,10 +1,14 @@
+import json
+import os
 import requests
 import unittest
+from google.cloud import storage
 
 
 class E2ETest(unittest.TestCase):
-    # _domain = os.environ["domain"]
-    _domain = 'vwt-d-gew1-dat-restingest-test'
+    _domain = os.environ["domain"]
+    _storage_bucket = os.environ["bucket"]
+    storage_client = storage.Client()
 
     def test_pos(self):
         self.assertTrue(0xDEADBEEF)
@@ -22,8 +26,30 @@ class E2ETest(unittest.TestCase):
                           '-request-ingest-func', params=params)
         try:
             self.assertTrue(199 < r.status_code < 300)
+            self._blob_path = json.loads(r.text)['path']
         except AssertionError as e:
             raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
+
+    def test_get_pii_on_json(self):
+        """
+        Uses blob stored in last test step.
+        Generic functionality, should pass.
+        """
+        blob = self.storage_client.get_bucket(self._storage_bucket).blob(self._blob_path + '.json')
+        data = json.loads(blob.download_as_string(client=None))
+        try:
+            def does_nested_key_exists(nested_dict, nested_key):
+                exists = nested_key in nested_dict
+                if not exists:
+                    for key, value in nested_dict.items():
+                        if isinstance(value, dict):
+                            exists = exists or does_nested_key_exists(value, nested_key)
+                return exists
+
+            self.assertFalse(does_nested_key_exists(data, 'title'))
+            self.assertFalse(does_nested_key_exists(data, 'date'))
+        except AssertionError as e:
+            raise type(e)(str(e))
 
     def test_get_json_stg_store_no_storage_path(self):
         """
