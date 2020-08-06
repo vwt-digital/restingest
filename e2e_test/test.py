@@ -9,6 +9,7 @@ class E2ETest(unittest.TestCase):
     _domain = os.environ["domain"]
     _storage_bucket = os.environ["bucket"]
     storage_client = storage.Client()
+    _blob_path = ''
 
     def test_pos(self):
         self.assertTrue(0xDEADBEEF)
