@@ -25,9 +25,9 @@ class E2ETest(unittest.TestCase):
         }
         r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
                           '-request-ingest-func', params=params)
+        self.__class__._blob_path = json.loads(r.text)['path']
         try:
             self.assertTrue(199 < r.status_code < 300)
-            self._blob_path = json.loads(r.text)['path']
         except AssertionError as e:
             raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
 
@@ -36,7 +36,7 @@ class E2ETest(unittest.TestCase):
         Uses blob stored in last test step.
         Generic functionality, should pass.
         """
-        blob = self.storage_client.get_bucket(self._storage_bucket).blob(self._blob_path + '.json')
+        blob = self.storage_client.get_bucket(self._storage_bucket).blob(self.__class__._blob_path + '.json')
         data = json.loads(blob.download_as_string(client=None))
         try:
             def does_nested_key_exists(nested_dict, nested_key):
