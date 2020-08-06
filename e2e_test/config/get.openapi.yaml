@@ -9,6 +9,7 @@ info:
   version: 1.0.0
 servers:
   - url: /
+x-pii-filter: ['title', 'date']
 paths:
   /generics:
     post:
@@ -25,4 +26,3 @@ paths:
           description: Successful response.
       x-codegen-request-body-name: body
       x-openapi-router-controller: openapi_server.controllers.default_controller
-      x-pii-filter: ['title', 'date']
