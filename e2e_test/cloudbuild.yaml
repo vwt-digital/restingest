@@ -59,8 +59,10 @@ steps:
         --project=${PROJECT_ID} \
         --region=europe-west1 \
         --set-env-vars=PROJECT_ID=${PROJECT_ID},STORAGE_BUCKET=$_STORAGE_BUCKET
-        echo '{ "bindings": [ { "members": [ "serviceAccount:${_SERVICE}@cloudbuild.gserviceaccount.com" ], "role": "roles/cloudfunctions.invoker" } ] }' > consume_func_permissions.json
-        gcloud beta functions set-iam-policy ${PROJECT_ID}-ingest-func --region=europe-west1 --project=${PROJECT_ID} consume_func_permissions.json
+        echo '{ "bindings": [ { "members": [ "serviceAccount:${_SERVICE}@cloudbuild.gserviceaccount.com" ],'\
+             '"role": "roles/cloudfunctions.invoker" } ] }' > consume_func_permissions.json
+        gcloud beta functions set-iam-policy ${PROJECT_ID}-ingest-func
+            --region=europe-west1 --project=${PROJECT_ID} consume_func_permissions.json
     dir: 'getconfig'
 
   # Run E2E tests
@@ -74,7 +76,8 @@ steps:
         export domain="${PROJECT_ID}"
         export bucket="${_STORAGE_BUCKET}"
         python -m pip install -r restingest/e2e_test/requirements-test.txt
-        python -m unittest discover --verbose -p test.py restingest/e2e_test/ || touch /workspace/persistent_failure_file
+        python -m unittest discover --verbose -p test.py restingest/e2e_test/ ||
+        touch /workspace/persistent_failure_file
 
   # Delete restingest functions after tests have run
   - name: 'gcr.io/cloud-builders/gcloud'
@@ -93,6 +96,12 @@ steps:
       - '-c'
       - |
         ! test -f /workspace/persistent_failure_file
+
+  # Run SAST
+  - name: 'eu.gcr.io/vwt-p-gew1-dat-cloudbuilders/cloudbuilder-sast'
+    id: 'SAST scan'
+    args: ['--target', '.']
+    dir: 'restingest'
 
 substitutions:
   _STORAGE_BUCKET: "Please_set_substitution_'_STORAGE_BUCKET'_in_cloudbuild_file"

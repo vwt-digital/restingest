@@ -4,49 +4,49 @@
 # https://aka.ms/yaml
 
 trigger:
-- develop
+  - develop
 
 jobs:
-- job: 'Test'
-  pool:
-    vmImage: 'Ubuntu-16.04'
-  steps:
-  - task: UsePythonVersion@0
-    displayName: 'Use Python 3.6'
-    inputs:
-      versionSpec: '>= 3.6'
+  - job: 'Test'
+    pool:
+      vmImage: 'Ubuntu-16.04'
+    steps:
+      - task: UsePythonVersion@0
+        displayName: 'Use Python 3.6'
+        inputs:
+          versionSpec: '>= 3.6'
 
-  - script: |
-     cp config.example.py config.py
-     pip3 install tox
-     tox
-    workingDirectory: functions
-    displayName: 'Run tests'
+      - script: |
+          cp config.example.py config.py
+          pip3 install tox
+          tox
+        workingDirectory: functions
+        displayName: 'Run tests'
 
-  - task: PublishTestResults@2
-    displayName: 'Publish Test Results'
-    inputs:
-      testResultsFiles: 'functions/test-*.xml'
-    condition: succeededOrFailed()
+      - task: PublishTestResults@2
+        displayName: 'Publish Test Results'
+        inputs:
+          testResultsFiles: 'functions/test-*.xml'
+        condition: succeededOrFailed()
 
-  - task: PublishCodeCoverageResults@1
-    displayName: 'Publish code coverage'
-    inputs:
-      codeCoverageTool: Cobertura
-      summaryFileLocation: 'functions/cov-nosetests.xml'
-      reportDirectory: 'functions/cov-nosetests-html'
-    condition: succeededOrFailed()
+      - task: PublishCodeCoverageResults@1
+        displayName: 'Publish code coverage'
+        inputs:
+          codeCoverageTool: Cobertura
+          summaryFileLocation: 'functions/cov-nosetests.xml'
+          reportDirectory: 'functions/cov-nosetests-html'
+        condition: succeededOrFailed()
 
-- job: 'Deploy'
-  pool:
-    vmImage: 'Ubuntu-16.04'
-  dependsOn: 'Test'
-  steps:
-  - script: |
-      cd functions
-      zip -r ../deploy.zip .
-    displayName: 'Create deployment artifact'
+  - job: 'Deploy'
+    pool:
+      vmImage: 'Ubuntu-16.04'
+    dependsOn: 'Test'
+    steps:
+      - script: |
+          cd functions
+          zip -r ../deploy.zip .
+        displayName: 'Create deployment artifact'
 
-  - task: PublishPipelineArtifact@0
-    inputs:
-      targetPath: deploy.zip
+      - task: PublishPipelineArtifact@0
+        inputs:
+          targetPath: deploy.zip
