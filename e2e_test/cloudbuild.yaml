@@ -2,17 +2,11 @@
 steps:
   # Clone restingest repository
   - name: 'gcr.io/cloud-builders/git'
+    id: 'clone repo'
     args:
       - 'clone'
       - '--branch=develop'
       - 'https://github.com/vwt-digital/restingest.git'
-
-  # Clone config repository
-  - name: 'gcr.io/cloud-builders/git'
-    args:
-      - 'clone'
-      - '--branch=develop'
-      - 'https://github.com/vwt-digital-config/restingest-config.git'
 
   # Copy config to cloud functions
   - name: 'gcr.io/cloud-builders/gcloud'
