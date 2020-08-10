@@ -1,6 +1,7 @@
 import json
 import os
 import requests
+# from requests_oauthlib import OAuth2
 import unittest
 from google.cloud import storage
 
@@ -245,5 +246,20 @@ class E2ETest(unittest.TestCase):
 
         try:
             self.assertFalse(199 < r.status_code < 300)
+        except AssertionError as e:
+            raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
+
+    def test_post_json_oauth_generic_pos(self):
+        """
+        Positive test which posts json using oauth
+        """
+        payload = {"json": "test"}
+        # auth = OAuth2('')
+
+        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
+                          '-receive-ingest-func/store-json-oauth', data=payload)
+
+        try:
+            self.assertTrue(199 < r.status_code < 300)
         except AssertionError as e:
             raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
