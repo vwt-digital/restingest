@@ -106,17 +106,7 @@ def generic_post(body):
         return make_response(jsonify(str(error)), 400)
 
 
-def generic_post2(body):
-    return generic_post(body)
-
-
-def generic_post3(body):
-    return generic_post(body)
-
-
-def generic_post4(body):
-    return generic_post(body)
-
-
-def generic_post5(body):
-    return generic_post(body)
+generic_post2 = generic_post
+generic_post3 = generic_post
+generic_post4 = generic_post
+generic_post5 = generic_post
