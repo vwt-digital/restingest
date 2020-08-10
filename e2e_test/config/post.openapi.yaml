@@ -48,3 +48,9 @@ paths:
           description: Successful response.
       x-codegen-request-body-name: body
       x-openapi-router-controller: openapi_server.controllers.default_controller
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+      x-basicInfoFunc: restingest-config.basic_auth.basic_auth
