@@ -5,4 +5,4 @@ from openapi_server.test import BaseTestCase
 class TestvAPI(BaseTestCase):
 
     def test_fuzzing(self):
-        FuzzIt("functions/restingest/openapi_server/openapi/openapi.yaml", '', self)
+        FuzzIt("openapi_server/openapi/openapi.yaml", '', self)
