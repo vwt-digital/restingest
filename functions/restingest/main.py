@@ -62,6 +62,14 @@ def http_request_store_blob_trigger_func(request):
     logging.basicConfig(level=logging.info)
     logging.info('Python HTTP handle_http_store_blob_trigger_func function processed a request from %s.', request.path)
 
+    if request.method not in ['GET', 'POST', 'OPTIONS']:
+        problem = {'type': 'NotAllowed',
+                   'title': 'Method {} is not allowed'.format(request.method),
+                   'status': 405}
+        response = make_response(jsonify(problem), 405)
+        response.headers['Content-Type'] = 'application/problem+json',
+        return response
+
     missing_parameters = []
     if not request.args or 'geturl' not in request.args or request.args['geturl'] not in config.URL_COLLECTIONS:
         missing_parameters.append('geturl')
