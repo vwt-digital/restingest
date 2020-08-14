@@ -280,5 +280,13 @@ def http_receive_store_blob_trigger_func(request):
     for key, value in request.headers:
         cpHeaders[key] = value
 
-    return connexion_app.handle_request(url=request.path, method=request.method,
-                                        headers=cpHeaders, data=request, type='request')
+    try:
+        return connexion_app.handle_request(url=request.path, method=request.method,
+                                            headers=cpHeaders, data=request, type='request')
+    except NotImplementedError:
+        problem = {'type': 'NotAllowed',
+                   'title': 'Method {} is not allowed'.format(request.method),
+                   'status': 405}
+        response = make_response(jsonify(problem), 405)
+        response.headers['Content-Type'] = 'application/problem+json',
+        return response
