@@ -62,17 +62,25 @@ def http_request_store_blob_trigger_func(request):
     logging.basicConfig(level=logging.info)
     logging.info('Python HTTP handle_http_store_blob_trigger_func function processed a request from %s.', request.path)
 
+    missing_parameters = []
     if not request.args or 'geturl' not in request.args or request.args['geturl'] not in config.URL_COLLECTIONS:
+        missing_parameters.append('geturl')
+
+    if not request.args or 'storepath' not in request.args:
+        missing_parameters.append('storepath')
+
+    if missing_parameters:
         problem = {'type': 'MissingParameter',
-                   'title': 'Expected parameter geturl not found or invalid',
+                   'title': 'Expected parameter(s) {} not found'.format(', '.join(missing_parameters)),
                    'status': 400}
         response = make_response(jsonify(problem), 400)
         response.headers['Content-Type'] = 'application/problem+json',
         return response
 
-    if not request.args or 'storepath' not in request.args:
-        problem = {'type': 'MissingParameter',
-                   'title': 'Expected parameter storepath not found',
+    unexpected_parameters = [p for p in request.args if p not in ['geturl', 'storepath']]
+    if unexpected_parameters:
+        problem = {'type': 'UnexpectedParameter',
+                   'title': 'Unexpected parameter(s) {} given'.format(', '.join(unexpected_parameters)),
                    'status': 400}
         response = make_response(jsonify(problem), 400)
         response.headers['Content-Type'] = 'application/problem+json',
