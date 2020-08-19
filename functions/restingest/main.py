@@ -97,6 +97,14 @@ def http_request_store_blob_trigger_func(request):
     request_def = config.URL_COLLECTIONS[request.args['geturl']]
     logging.info('Stored definition {}'.format(request_def))
 
+    if request_def.get('method') not in ['GET', 'POST']:
+        problem = {'type': 'InvalidRequest',
+                   'title': "Given method '{}' is invalid".format(request_def.get('method')),
+                   'status': 400}
+        problem_response = make_response(jsonify(problem), 400)
+        problem_response.headers['Content-Type'] = 'application/problem+json'
+        return problem_response
+
     skip = None
     taken = 0
     take_size = request_def.get('pagination', {}).get('take_size', 0)
@@ -145,15 +153,8 @@ def count_elements(request_def, data_response):
 def request_store_blob_trigger(storepath, request_def, skip):
     if request_def['method'] == 'GET':
         return request_by_getting_http_store_blob(storepath, request_def, skip)
-    elif request_def['method'] == 'POST':
+    if request_def['method'] == 'POST':
         return request_by_posting_http_store_blob(storepath, request_def, skip)
-    else:
-        problem = {'type': 'InvalidRequest',
-                   'title': 'Invalid Request',
-                   'status': 400}
-        response = make_response(jsonify(problem), 415)
-        response.headers['Content-Type'] = 'application/problem+json',
-        return response
 
 
 def append_pagination_to_url(request_def, skip):
