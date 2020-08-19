@@ -194,6 +194,9 @@ def request_by_posting_http_store_blob(storepath, request_def, skip):
         for value in values_to_replace:
             request_data = request_data.replace(value,
                                                 values_to_replace[value])
+
+    session = utils.get_requests_session()
+
     if oauth1_config:
         consumer_secret = get_authentication_secret()
         consumer_key = config.CONSUMER_KEY
@@ -203,7 +206,7 @@ def request_by_posting_http_store_blob(storepath, request_def, skip):
             signature_method='HMAC-SHA1'
         )
 
-        data_response = requests.post(
+        data_response = session.post(
             request_def['url'],
             auth=oauth_1,
             data=request_data,
@@ -213,7 +216,7 @@ def request_by_posting_http_store_blob(storepath, request_def, skip):
     else:
         post_url = append_pagination_to_url(request_def, skip)
         logging.info(f'Requesting data by POST to {post_url}')
-        data_response = requests.post(
+        data_response = session.post(
             post_url,
             data=request_data,
             headers=cpHeaders,
@@ -251,7 +254,8 @@ def request_by_getting_http_store_blob(storepath, request_def, skip):
         headers.update(gather_authorization_headers(request_def))
         get_url = append_pagination_to_url(request_def, skip)
         logging.info(f'Requesting data by GET to {get_url}')
-        data_response = requests.get(get_url, headers=headers)
+        session = utils.get_requests_session()
+        data_response = session.get(get_url, headers=headers)
         data_response.raise_for_status()
     except requests.exceptions.HTTPError:
         logging.exception('Error retrieving data from [%s]', request_def['url'])
