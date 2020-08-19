@@ -56,6 +56,8 @@ def store_blobs(destination_path, blob_data, content_type, should_apply_pii_filt
     if type(blob_data) == list or type(blob_data) == dict:
         blob_data = json.dumps(blob_data)
 
+    logging.info('Storing blob data on path: {}'.format(destination_path))
+
     for cs in current_app.cloudstorage:
         cs.storeBlob(destination_path, blob_data_pii, content_type)
 
