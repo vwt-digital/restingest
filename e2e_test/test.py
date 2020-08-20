@@ -9,6 +9,7 @@ from google.cloud import storage
 class E2ETest(unittest.TestCase):
     _domain = os.environ["domain"]
     _storage_bucket = os.environ["bucket"]
+    _test_secret = os.environ["test_secret"]
     storage_client = storage.Client()
     _blob_path = ''
 
@@ -149,6 +150,7 @@ class E2ETest(unittest.TestCase):
         except AssertionError as e:
             raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
 
+    #
     # def test_post_json_no_auth_urlencoded_pos(self):
     #     data = json.dumps({'ID': 1})
     #     headers = {
@@ -253,11 +255,11 @@ class E2ETest(unittest.TestCase):
         """
         Positive test which posts json using oauth
         """
-        payload = {"json": "test"}
-        # auth = OAuth2('')
+        headers = {"Authorization": self._test_secret}
+        payload = {"ID": "1"}
 
         r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-receive-ingest-func/store-json-oauth', data=payload)
+                          '-receive-ingest-func/store-json-oauth', headers=headers, data=payload)
 
         try:
             self.assertTrue(199 < r.status_code < 300)
