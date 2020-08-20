@@ -9,7 +9,7 @@ from google.cloud import storage
 class E2ETest(unittest.TestCase):
     _domain = os.environ["domain"]
     _storage_bucket = os.environ["bucket"]
-    _test_secret = os.environ["test_secret"]
+    _test_token = os.environ["test_token"]
     storage_client = storage.Client()
     _blob_path = ''
 
@@ -255,7 +255,7 @@ class E2ETest(unittest.TestCase):
         """
         Positive test which posts json using oauth
         """
-        headers = {"Authorization": self._test_secret}
+        headers = {"Authorization": self._test_token}
         payload = {"ID": "1"}
 
         r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
