@@ -9,7 +9,6 @@ from google.cloud import storage
 class E2ETest(unittest.TestCase):
     _domain = os.environ["domain"]
     _storage_bucket = os.environ["bucket"]
-    _project_id = os.environ["project_id"]
     _test_token = os.environ["test_token"]
     storage_client = storage.Client()
     _blob_path = ''
@@ -258,7 +257,7 @@ class E2ETest(unittest.TestCase):
         """
         oauth_headers = {"Content-Type: application/x-www-form-urlencoded"}
         oauth_data = {"client_id": "47ae5f24-b920-4d55-b67c-933d53d23cad",
-                      "scope": "https://" + self._project_id,
+                      "scope": "https://" + self._domain,
                       "client_secret": self._test_token,
                       "grant-type": "client_credentials"}
         token = requests.post('https://login.microsoftonline.com/be36ab0a-ee39-47de-9356-a8a501a9c832/'
