@@ -255,13 +255,13 @@ class E2ETest(unittest.TestCase):
         """
         Positive test which posts json using oauth
         """
-        oauth_headers = {"Content-Type: application/x-www-form-urlencoded"}
+        # oauth_headers = {"Content-Type: application/x-www-form-urlencoded"}
         oauth_data = {"client_id": "47ae5f24-b920-4d55-b67c-933d53d23cad",
                       "scope": "https://" + self._domain,
                       "client_secret": self._test_token,
                       "grant-type": "client_credentials"}
         token = requests.post('https://login.microsoftonline.com/be36ab0a-ee39-47de-9356-a8a501a9c832/'
-                              'oauth2/v2.0/token', headers=oauth_headers, data=oauth_data)
+                              'oauth2/v2.0/token', data=oauth_data)
 
         headers = {"Authorization": token}
         payload = {"ID": "1"}
