@@ -255,12 +255,11 @@ class E2ETest(unittest.TestCase):
         """
         Positive test which posts json using oauth
         """
-        # headers = {"Authorization": self._test_secret}
-        payload = {"Authorization": self._test_secret,
-                   "ID": "1"}
+        headers = {"Authorization": self._test_secret}
+        payload = {"ID": "1"}
 
         r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-receive-ingest-func/store-json-oauth', data=payload)
+                          '-receive-ingest-func/store-json-oauth', headers=headers, data=payload)
 
         try:
             self.assertTrue(199 < r.status_code < 300)
