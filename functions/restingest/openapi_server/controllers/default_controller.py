@@ -10,7 +10,6 @@ from flask import make_response
 from flask import current_app
 from flask import request
 
-from defusedxml import ElementTree as defusedxml_ET
 from lxml import etree as ET  # nosec
 
 
@@ -37,11 +36,15 @@ def apply_pii_filter(body, pii_filter):
 def store_blobs(destination_path, blob_data, content_type, should_apply_pii_filter):
     if content_type in ['text/xml', 'application/xml', 'application/xml-external-parsed-entity',
                         'text/xml-external-parsed-entity', 'application/xml-dtd']:
-        safe_xml_tree = defusedxml_ET.fromstring(blob_data)
-        xml_tree = ET.fromstring(defusedxml_ET.tostring(safe_xml_tree))  # nosec
+
+        xml_tree = ET.fromstring(blob_data)  # nosec
+        ET.strip_tags(xml_tree, ET.Comment)
 
         for elem in xml_tree.getiterator():
-            elem.tag = ET.QName(elem).localname
+            try:
+                elem.tag = ET.QName(elem).localname
+            except ValueError:
+                continue
 
         blob_data = ET.tostring(xml_tree)
 
