@@ -117,6 +117,22 @@ class E2ETest(unittest.TestCase):
         except AssertionError as e:
             raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
 
+    def test_get_text_stg_store_generic(self):
+        """
+        Creates post request with parameters to get text and stores into storage in specific path.
+        Generic functionality, should pass.
+        """
+        params = {
+            'geturl': 'generics-text',
+            'storepath': 'generics'
+        }
+        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
+                          '-request-ingest-func', params=params)
+        try:
+            self.assertTrue(199 < r.status_code < 300)
+        except AssertionError as e:
+            raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
+
     def test_get_xml_stg_store_generic(self):
         """
         Creates post request with parameters to get xml and stores into storage in specific path.
@@ -265,7 +281,7 @@ class E2ETest(unittest.TestCase):
 
         try:
             headers = {"Authorization": "Bearer " + token_data['access_token']}
-        except:  # noqa: E772
+        except:  # noqa: E722
             RuntimeError("Could not get token: ", token_data)
 
         payload = {"ID": "1"}
