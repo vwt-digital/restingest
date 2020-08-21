@@ -283,7 +283,7 @@ class E2ETest(unittest.TestCase):
 
         payload = {"ID": "1"}
 
-        r = requests.post('http35s://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
+        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
                           '-receive-ingest-func/store-json-oauth', headers=headers, data=payload)
 
         try:
