@@ -263,8 +263,14 @@ class E2ETest(unittest.TestCase):
         token = requests.post('https://login.microsoftonline.com/be36ab0a-ee39-47de-9356-a8a501a9c832/'
                               'oauth2/v2.0/token', data=oauth_data)
         token_data = token.json()
-        headers = {"Authorization": "Bearer" + token_data["access_token"]}
+
+        try:
+            headers = {"Authorization": "Bearer " + token_data["access_token"]}
+        except (IndexError, KeyError):
+            RuntimeError("Could not get token: ", token_data)
+
         payload = {"ID": "1"}
+
         r = requests.post('http35s://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
                           '-receive-ingest-func/store-json-oauth', headers=headers, data=payload)
 
