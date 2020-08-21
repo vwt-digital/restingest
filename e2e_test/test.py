@@ -272,7 +272,7 @@ class E2ETest(unittest.TestCase):
         """
         # oauth_headers = {"Content-Type: application/x-www-form-urlencoded"}
         oauth_data = {"client_id": "47ae5f24-b920-4d55-b67c-933d53d23cad",
-                      "scope": "https://" + self._domain.replace("-dat", "") + "/.default",
+                      "scope": "https://" + self._domain.replace("-dat", "") + "/.default openid",
                       "client_secret": self._test_token,
                       "grant_type": "client_credentials"}
         token = requests.post('https://login.microsoftonline.com/be36ab0a-ee39-47de-9356-a8a501a9c832/'
