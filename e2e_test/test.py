@@ -257,13 +257,13 @@ class E2ETest(unittest.TestCase):
         """
         # oauth_headers = {"Content-Type: application/x-www-form-urlencoded"}
         oauth_data = {"client_id": "47ae5f24-b920-4d55-b67c-933d53d23cad",
-                      "scope": "https://" + self._domain.replace("-dat", "") + "/.default",
+                      "scope": "https://" + self._domain.replace("-dat", "") + "/restingesttest.read openid",
                       "client_secret": self._test_token,
                       "grant_type": "client_credentials"}
         token = requests.post('https://login.microsoftonline.com/be36ab0a-ee39-47de-9356-a8a501a9c832/'
                               'oauth2/v2.0/token', data=oauth_data)
-        raise AssertionError(token.json())
-        headers = {"Authorization": token}
+        token_data = token.json()
+        headers = {"Authorization": "Bearer" + token_data["access_token"]}
         payload = {"ID": "1"}
         r = requests.post('http35s://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
                           '-receive-ingest-func/store-json-oauth', headers=headers, data=payload)
