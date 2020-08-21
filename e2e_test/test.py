@@ -279,7 +279,6 @@ class E2ETest(unittest.TestCase):
                               'oauth2/v2.0/token', data=oauth_data)
         token_data = token.json()
 
-        raise RuntimeError(token_data)
         headers = {"Authorization": "Bearer " + token_data['access_token']}
 
         payload = {"ID": "1"}
