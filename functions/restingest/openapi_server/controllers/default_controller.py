@@ -3,6 +3,7 @@ import datetime
 import json
 import mimetypes
 import requests
+import uuid
 
 from flask import jsonify
 from flask import make_response
@@ -68,11 +69,14 @@ def store_blobs(destination_path, blob_data, content_type, should_apply_pii_filt
 def generic_post(body):
     extension = mimetypes.guess_extension(request.mimetype)
     now = datetime.datetime.utcnow()
-    timestamp = '%04d%02d%02dT%02d%02d%02dZ' % (now.year, now.month, now.day,
-                                                now.hour, now.minute, now.second)
+
+    timestamp = 'T%02d%02d%02dZ' % (now.hour, now.minute, now.second)
+    date_timestamp = '%04d%02d%02d%s' % (now.year, now.month, now.day, timestamp)
+
     take_skip = f"_{request.headers['X-Take-Skip']}" if 'X-Take-Skip' in request.headers else ''
-    destination_path = '%s%s/%04d/%02d/%02d/%s%s' % (current_app.base_path, request.path,
-                                                     now.year, now.month, now.day, timestamp, take_skip)
+    destination_path = '%s%s/%04d/%02d/%02d/%s%s-%s' % (current_app.base_path, request.path,
+                                                        now.year, now.month, now.day, timestamp, take_skip,
+                                                        str(uuid.uuid4()))
 
     try:
         if body:
@@ -82,7 +86,7 @@ def generic_post(body):
         elif request.files:
             for index, file in enumerate(request.files, start=1):
                 file_extension = mimetypes.guess_extension(request.files[file].content_type)
-                file_destination_path = '%s/%s_%s%s' % (destination_path, timestamp, index,
+                file_destination_path = '%s/%s_%s%s' % (destination_path, date_timestamp, index,
                                                         (file_extension if file_extension else ''))
                 store_blobs(file_destination_path, request.files[file].read(), request.files[file].content_type, False)
         elif request.form:
@@ -90,7 +94,7 @@ def generic_post(body):
                 new_data = json.loads(request.form[data])
 
                 for index, blob_data in enumerate(new_data, start=1):
-                    file_destination_path = '%s/%s_%s%s' % (destination_path, timestamp, index,
+                    file_destination_path = '%s/%s_%s%s' % (destination_path, date_timestamp, index,
                                                             (extension if extension else ''))
                     store_blobs(file_destination_path, blob_data, request.mimetype, False)
         elif request.data:
