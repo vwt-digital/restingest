@@ -259,7 +259,7 @@ class E2ETest(unittest.TestCase):
         oauth_data = {"client_id": "47ae5f24-b920-4d55-b67c-933d53d23cad",
                       "scope": "https://" + self._domain,
                       "client_secret": self._test_token,
-                      "grant-type": "client_credentials"}
+                      "grant_type": "client_credentials"}
         token = requests.post('https://login.microsoftonline.com/be36ab0a-ee39-47de-9356-a8a501a9c832/'
                               'oauth2/v2.0/token', data=oauth_data)
         raise AssertionError(token.json())
