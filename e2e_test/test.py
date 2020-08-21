@@ -279,10 +279,8 @@ class E2ETest(unittest.TestCase):
                               'oauth2/v2.0/token', data=oauth_data)
         token_data = token.json()
 
-        try:
-            headers = {"Authorization": "Bearer " + token_data['access_token']}
-        except:  # noqa: E722
-            RuntimeError("Could not get token: ", token_data)
+        raise RuntimeError(token_data)
+        headers = {"Authorization": "Bearer " + token_data['access_token']}
 
         payload = {"ID": "1"}
 
