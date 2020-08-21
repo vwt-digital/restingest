@@ -262,10 +262,10 @@ class E2ETest(unittest.TestCase):
                       "grant-type": "client_credentials"}
         token = requests.post('https://login.microsoftonline.com/be36ab0a-ee39-47de-9356-a8a501a9c832/'
                               'oauth2/v2.0/token', data=oauth_data)
-        print(token)
+        raise AssertionError(token.json())
         headers = {"Authorization": token}
         payload = {"ID": "1"}
-        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
+        r = requests.post('http35s://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
                           '-receive-ingest-func/store-json-oauth', headers=headers, data=payload)
 
         try:
