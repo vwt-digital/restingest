@@ -262,7 +262,7 @@ class E2ETest(unittest.TestCase):
                       "grant-type": "client_credentials"}
         token = requests.post('https://login.microsoftonline.com/be36ab0a-ee39-47de-9356-a8a501a9c832/'
                               'oauth2/v2.0/token', data=oauth_data)
-
+        print(token)
         headers = {"Authorization": token}
         payload = {"ID": "1"}
         r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
