@@ -265,8 +265,8 @@ class E2ETest(unittest.TestCase):
         token_data = token.json()
 
         try:
-            headers = {"Authorization": "Bearer " + token_data["access_token"]}
-        except (IndexError, KeyError):
+            headers = {"Authorization": "Bearer " + token_data['access_token']}
+        except (IndexError, KeyError, AttributeError):
             RuntimeError("Could not get token: ", token_data)
 
         payload = {"ID": "1"}
