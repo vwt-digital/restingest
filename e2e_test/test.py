@@ -1,7 +1,6 @@
 import json
 import os
 import requests
-# from requests_oauthlib import OAuth2
 import unittest
 from google.cloud import storage
 
@@ -266,7 +265,7 @@ class E2ETest(unittest.TestCase):
 
         try:
             headers = {"Authorization": "Bearer " + token_data['access_token']}
-        except (IndexError, KeyError, AttributeError):
+        except:  # noqa: E772
             RuntimeError("Could not get token: ", token_data)
 
         payload = {"ID": "1"}
