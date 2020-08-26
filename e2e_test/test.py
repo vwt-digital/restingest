@@ -22,10 +22,10 @@ class E2ETest(unittest.TestCase):
         """
         params = {
             'geturl': 'generics-json',
-            'storepath': 'generics'
+            'storepath': 'generics-json'
         }
         r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-request-ingest-func', params=params)
+                          '-request-ingest-func/generics-json', params=params)
         self.__class__._blob_path = json.loads(r.text)['path']
         try:
             self.assertTrue(199 < r.status_code < 300)
@@ -62,7 +62,7 @@ class E2ETest(unittest.TestCase):
             'geturl': 'generics-json',
         }
         r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-request-ingest-func', params=params)
+                          '-request-ingest-func/generics-json', params=params)
         try:
             self.assertFalse(199 < r.status_code < 300)
         except AssertionError as e:
@@ -83,7 +83,7 @@ class E2ETest(unittest.TestCase):
         for params in param_list.values():
             print('Testing with geturl: ' + str(params['geturl']) + ' and storepath: ' + str(params['storepath']))
             r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                              '-request-ingest-func', params=params)
+                              '-request-ingest-func/generics-json', params=params)
             try:
                 self.assertFalse(199 < r.status_code < 300)
             except AssertionError as e:
@@ -99,7 +99,7 @@ class E2ETest(unittest.TestCase):
             'Args': 'args'
         }
         r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-request-ingest-func', params=params)
+                          '-request-ingest-func/generics-json', params=params)
         try:
             self.assertFalse(199 < r.status_code < 300)
         except AssertionError as e:
@@ -111,7 +111,7 @@ class E2ETest(unittest.TestCase):
         No parameters passed, should fail.
         """
         r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-request-ingest-func')
+                          '-request-ingest-func/generics-json')
         try:
             self.assertFalse(199 < r.status_code < 300)
         except AssertionError as e:
@@ -124,10 +124,10 @@ class E2ETest(unittest.TestCase):
         """
         params = {
             'geturl': 'generics-text',
-            'storepath': 'generics'
+            'storepath': 'generics-text'
         }
         r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-request-ingest-func', params=params)
+                          '-request-ingest-func/generics-text', params=params)
         try:
             self.assertTrue(199 < r.status_code < 300)
         except AssertionError as e:
@@ -140,10 +140,10 @@ class E2ETest(unittest.TestCase):
         """
         params = {
             'geturl': 'generics-xml',
-            'storepath': 'generics'
+            'storepath': 'generics-xml'
         }
         r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-request-ingest-func', params=params)
+                          '-request-ingest-func/generics-xml', params=params)
         try:
             self.assertTrue(199 < r.status_code < 300)
         except AssertionError as e:
