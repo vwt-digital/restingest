@@ -98,10 +98,12 @@ def http_request_store_blob_trigger_func(request):
     logging.info('Stored definition {}'.format(request_def))
 
     if request_def.get('method') not in ['GET', 'POST']:
-        problem = {'type': 'InvalidRequest',
-                   'title': "Given method '{}' is invalid".format(request_def.get('method')),
-                   'status': 400}
-        problem_response = make_response(jsonify(problem), 400)
+        logging.exception("Error using method '{}' from config URL_COLLECTIONS. Use GET or POST."
+                          .format(request_def.get('method')))
+        problem = {'type': 'InternalConfigError',
+                   'title': 'Internal configuration incorrect',
+                   'status': 500}
+        problem_response = make_response(jsonify(problem), 500)
         problem_response.headers['Content-Type'] = 'application/problem+json'
         return problem_response
 
