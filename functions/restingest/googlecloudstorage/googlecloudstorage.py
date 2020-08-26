@@ -11,7 +11,7 @@ class GoogleCloudStorage(CloudStorageInterface):
         self.storageBucket = storage.Client().get_bucket(bucket_name)
         self.bucket_name = bucket_name
 
-    @retry(ConnectionError, tries=3, delay=2, backoff=2)
+    @retry(ConnectionError, tries=3, delay=2, backoff=2, logger=None)
     def storeBlob(self, path, data, content_type, chunk_size=5242880):
         blob = self.storageBucket.blob(path, chunk_size)
         blob.upload_from_string(data, content_type)
