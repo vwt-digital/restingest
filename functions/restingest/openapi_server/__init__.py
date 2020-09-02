@@ -4,6 +4,7 @@ import config
 
 from flask import current_app
 from flask_cors import CORS
+from Flask_AuditLog import AuditLog
 from azurecloudstorage import AzureCloudStorage
 from googlecloudstorage import GoogleCloudStorage
 
@@ -17,6 +18,9 @@ class BaseApp:
     def __init__(self):
         self.cxnapp = connexion.App(__name__, specification_dir='openapi/')
         self.cxnapp.add_api('openapi.yaml')
+
+        AuditLog(self.cxnapp.app)
+
         CORS(self.cxnapp.app)
         with self.cxnapp.app.app_context():
             current_app.__pii_filter_def__ = None
