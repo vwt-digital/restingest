@@ -19,7 +19,7 @@ class BaseApp:
         self.cxnapp = connexion.App(__name__, specification_dir='openapi/')
         self.cxnapp.add_api('openapi.yaml')
 
-        AuditLog(self.cxnapp.app)
+        AuditLog(self.cxnapp)
 
         CORS(self.cxnapp.app)
         with self.cxnapp.app.app_context():
