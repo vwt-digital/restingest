@@ -104,7 +104,7 @@ def generic_post(body):
                     store_blobs(file_destination_path, blob_data, request.mimetype, False)
         elif request.data:
             file_destination_path = '%s%s' % (destination_path, (extension if extension else ''))
-            store_blobs(file_destination_path, request.data, request.mimetype, False)
+            store_blobs(file_destination_path, request.data, request.mimetype, ('application/json' in request.mimetype))
         else:
             raise ValueError('No correct body provided.')
 
