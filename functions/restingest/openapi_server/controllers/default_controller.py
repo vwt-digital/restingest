@@ -108,7 +108,7 @@ def generic_post(body):
         else:
             raise ValueError('No correct body provided.')
 
-        return make_response(201)
+        return make_response('Created', 201)
     except requests.exceptions.ConnectionError as error:
         logging.error(f"An exception occurred when uploading: {str(error)}")
         return make_response(jsonify(str(error)), 400)

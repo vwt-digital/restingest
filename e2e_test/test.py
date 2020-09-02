@@ -27,7 +27,6 @@ class E2ETest(unittest.TestCase):
         }
         r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
                           '-request-ingest-func/generics-json', params=params)
-        self.__class__._blob_path = json.loads(r.text)['path']
         try:
             self.assertTrue(199 < r.status_code < 300)
         except AssertionError as e:
