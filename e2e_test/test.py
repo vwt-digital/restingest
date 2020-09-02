@@ -1,5 +1,6 @@
 import json
 import os
+import datetime
 import requests
 import unittest
 from google.cloud import storage
@@ -37,7 +38,13 @@ class E2ETest(unittest.TestCase):
         Uses blob stored in last test step.
         Generic functionality, should pass.
         """
-        blob = self.storage_client.get_bucket(self._storage_bucket).blob(self.__class__._blob_path + '.json')
+        now = datetime.datetime.utcnow()
+        location = 'test/e2e/generics-json/%04d/%02d/%02d' % (now.year, now.month, now.day)
+        blobs = [(blob, blob.updated) for blob in self.storage_client.list_blobs(
+            self._storage_bucket,
+            prefix=location,
+        )]
+        blob = sorted(blobs, key=lambda tup: tup[1])[-1][0]
         data = json.loads(blob.download_as_string(client=None))
         try:
             def does_nested_key_exists(nested_dict, nested_key):
