@@ -3,6 +3,7 @@ import datetime
 import json
 import mimetypes
 import requests
+import uuid
 
 from flask import jsonify
 from flask import make_response
@@ -10,7 +11,7 @@ from flask import current_app
 from flask import request
 
 from defusedxml import ElementTree as defusedxml_ET
-from lxml import etree as ET
+from lxml import etree as ET  # nosec
 
 
 def apply_pii_filter(body, pii_filter):
@@ -34,10 +35,16 @@ def apply_pii_filter(body, pii_filter):
 
 
 def store_blobs(destination_path, blob_data, content_type, should_apply_pii_filter):
-    if content_type == 'text/xml':
-        safe_xml_tree = defusedxml_ET.fromstring(blob_data)
-        xml_tree = ET.fromstring(defusedxml_ET.tostring(safe_xml_tree))
+    if content_type in ['text/xml', 'application/xml', 'application/xml-external-parsed-entity',
+                        'text/xml-external-parsed-entity', 'application/xml-dtd']:
 
+        # Run blob_data through defusedxml's ElementTree first to mitigate exposure from XML attacks
+        safe_xml_tree = defusedxml_ET.fromstring(blob_data)
+
+        # Run safe_xml_tree through lxml's ElementTree second to process
+        xml_tree = ET.fromstring(defusedxml_ET.tostring(safe_xml_tree))  # nosec
+
+        # Run through elements and select the local name for each tag to clean data of extra exposed namespaces
         for elem in xml_tree.getiterator():
             elem.tag = ET.QName(elem).localname
 
@@ -55,6 +62,8 @@ def store_blobs(destination_path, blob_data, content_type, should_apply_pii_filt
     if type(blob_data) == list or type(blob_data) == dict:
         blob_data = json.dumps(blob_data)
 
+    logging.info('Storing blob data on path: {}'.format(destination_path))
+
     for cs in current_app.cloudstorage:
         cs.storeBlob(destination_path, blob_data_pii, content_type)
 
@@ -65,11 +74,14 @@ def store_blobs(destination_path, blob_data, content_type, should_apply_pii_filt
 def generic_post(body):
     extension = mimetypes.guess_extension(request.mimetype)
     now = datetime.datetime.utcnow()
+
     timestamp = '%04d%02d%02dT%02d%02d%02dZ' % (now.year, now.month, now.day,
                                                 now.hour, now.minute, now.second)
+
     take_skip = f"_{request.headers['X-Take-Skip']}" if 'X-Take-Skip' in request.headers else ''
-    destination_path = '%s%s/%04d/%02d/%02d/%s%s' % (current_app.base_path, request.path,
-                                                     now.year, now.month, now.day, timestamp, take_skip)
+    destination_path = '%s%s/%04d/%02d/%02d/%s%s-%s' % (current_app.base_path, request.path,
+                                                        now.year, now.month, now.day, timestamp, take_skip,
+                                                        str(uuid.uuid4()))
 
     try:
         if body:
@@ -92,7 +104,7 @@ def generic_post(body):
                     store_blobs(file_destination_path, blob_data, request.mimetype, False)
         elif request.data:
             file_destination_path = '%s%s' % (destination_path, (extension if extension else ''))
-            store_blobs(file_destination_path, request.data, request.mimetype, False)
+            store_blobs(file_destination_path, request.data, request.mimetype, ('application/json' in request.mimetype))
         else:
             raise ValueError('No correct body provided.')
 
@@ -105,17 +117,7 @@ def generic_post(body):
         return make_response(jsonify(str(error)), 400)
 
 
-def generic_post2(body):
-    return generic_post(body)
-
-
-def generic_post3(body):
-    return generic_post(body)
-
-
-def generic_post4(body):
-    return generic_post(body)
-
-
-def generic_post5(body):
-    return generic_post(body)
+generic_post2 = generic_post
+generic_post3 = generic_post
+generic_post4 = generic_post
+generic_post5 = generic_post

@@ -62,17 +62,33 @@ def http_request_store_blob_trigger_func(request):
     logging.basicConfig(level=logging.info)
     logging.info('Python HTTP handle_http_store_blob_trigger_func function processed a request from %s.', request.path)
 
+    if request.method not in ['GET', 'POST', 'OPTIONS']:
+        problem = {'type': 'NotAllowed',
+                   'title': 'Method {} is not allowed'.format(request.method),
+                   'status': 405}
+        response = make_response(jsonify(problem), 405)
+        response.headers['Content-Type'] = 'application/problem+json',
+        return response
+
+    missing_parameters = []
     if not request.args or 'geturl' not in request.args or request.args['geturl'] not in config.URL_COLLECTIONS:
+        missing_parameters.append('geturl')
+
+    if not request.args or 'storepath' not in request.args:
+        missing_parameters.append('storepath')
+
+    if missing_parameters:
         problem = {'type': 'MissingParameter',
-                   'title': 'Expected parameter geturl not found or invalid',
+                   'title': 'Expected parameter(s) {} not found'.format(', '.join(missing_parameters)),
                    'status': 400}
         response = make_response(jsonify(problem), 400)
         response.headers['Content-Type'] = 'application/problem+json',
         return response
 
-    if not request.args or 'storepath' not in request.args:
-        problem = {'type': 'MissingParameter',
-                   'title': 'Expected parameter storepath not found',
+    unexpected_parameters = [p for p in request.args if p not in ['geturl', 'storepath']]
+    if unexpected_parameters:
+        problem = {'type': 'UnexpectedParameter',
+                   'title': 'Unexpected parameter(s) {} given'.format(', '.join(unexpected_parameters)),
                    'status': 400}
         response = make_response(jsonify(problem), 400)
         response.headers['Content-Type'] = 'application/problem+json',
@@ -80,6 +96,16 @@ def http_request_store_blob_trigger_func(request):
 
     request_def = config.URL_COLLECTIONS[request.args['geturl']]
     logging.info('Stored definition {}'.format(request_def))
+
+    if request_def.get('method') not in ['GET', 'POST']:
+        logging.exception("Error using method '{}' from config URL_COLLECTIONS. Use GET or POST."
+                          .format(request_def.get('method')))
+        problem = {'type': 'InternalConfigError',
+                   'title': 'Internal configuration incorrect',
+                   'status': 500}
+        problem_response = make_response(jsonify(problem), 500)
+        problem_response.headers['Content-Type'] = 'application/problem+json'
+        return problem_response
 
     skip = None
     taken = 0
@@ -129,15 +155,8 @@ def count_elements(request_def, data_response):
 def request_store_blob_trigger(storepath, request_def, skip):
     if request_def['method'] == 'GET':
         return request_by_getting_http_store_blob(storepath, request_def, skip)
-    elif request_def['method'] == 'POST':
+    if request_def['method'] == 'POST':
         return request_by_posting_http_store_blob(storepath, request_def, skip)
-    else:
-        problem = {'type': 'InvalidRequest',
-                   'title': 'Invalid Request',
-                   'status': 400}
-        response = make_response(jsonify(problem), 415)
-        response.headers['Content-Type'] = 'application/problem+json',
-        return response
 
 
 def append_pagination_to_url(request_def, skip):
@@ -177,6 +196,9 @@ def request_by_posting_http_store_blob(storepath, request_def, skip):
         for value in values_to_replace:
             request_data = request_data.replace(value,
                                                 values_to_replace[value])
+
+    session = utils.get_requests_session()
+
     if oauth1_config:
         consumer_secret = get_authentication_secret()
         consumer_key = config.CONSUMER_KEY
@@ -186,7 +208,7 @@ def request_by_posting_http_store_blob(storepath, request_def, skip):
             signature_method='HMAC-SHA1'
         )
 
-        data_response = requests.post(
+        data_response = session.post(
             request_def['url'],
             auth=oauth_1,
             data=request_data,
@@ -196,7 +218,7 @@ def request_by_posting_http_store_blob(storepath, request_def, skip):
     else:
         post_url = append_pagination_to_url(request_def, skip)
         logging.info(f'Requesting data by POST to {post_url}')
-        data_response = requests.post(
+        data_response = session.post(
             post_url,
             data=request_data,
             headers=cpHeaders,
@@ -234,7 +256,8 @@ def request_by_getting_http_store_blob(storepath, request_def, skip):
         headers.update(gather_authorization_headers(request_def))
         get_url = append_pagination_to_url(request_def, skip)
         logging.info(f'Requesting data by GET to {get_url}')
-        data_response = requests.get(get_url, headers=headers)
+        session = utils.get_requests_session()
+        data_response = session.get(get_url, headers=headers)
         data_response.raise_for_status()
     except requests.exceptions.HTTPError:
         logging.exception('Error retrieving data from [%s]', request_def['url'])
@@ -272,5 +295,13 @@ def http_receive_store_blob_trigger_func(request):
     for key, value in request.headers:
         cpHeaders[key] = value
 
-    return connexion_app.handle_request(url=request.path, method=request.method,
-                                        headers=cpHeaders, data=request, type='request')
+    try:
+        return connexion_app.handle_request(url=request.path, method=request.method,
+                                            headers=cpHeaders, data=request, type='request')
+    except NotImplementedError:
+        problem = {'type': 'NotAllowed',
+                   'title': 'Method {} is not allowed'.format(request.method),
+                   'status': 405}
+        response = make_response(jsonify(problem), 405)
+        response.headers['Content-Type'] = 'application/problem+json',
+        return response

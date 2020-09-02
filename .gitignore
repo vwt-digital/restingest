@@ -9,4 +9,4 @@ __pycache__/
 cov-nosetests-html/
 cov-*.xml
 test-*.xml
-
+*.pyc
