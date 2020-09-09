@@ -286,7 +286,7 @@ class E2ETest(unittest.TestCase):
         print(token.json())
         token_data = token.json()
 
-        headers = {"Authorization": "Bearer" + token_data['access_token']}
+        headers = {"Authorization": "Bearer " + token_data['access_token']}
 
         payload = {"ID": "1"}
 
