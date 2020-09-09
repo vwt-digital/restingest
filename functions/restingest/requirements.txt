@@ -14,8 +14,8 @@ defusedxml==0.6.0
 Flask==1.1.1
 Flask-AuditLog==1.0
 Flask-Cors==3.0.8
-google-api-core==1.22.1
-google-auth==1.21.0
+google-api-core==1.22.2
+google-auth==1.21.1
 google-cloud-core==1.4.1
 google-cloud-kms==1.4.0
 google-cloud-secret-manager==1.0.0
@@ -34,6 +34,7 @@ lxml==4.5.0
 MarkupSafe==1.1.1
 oauthlib==3.1.0
 openapi-spec-validator==0.2.9
+pkg-resources==0.0.0
 protobuf==3.13.0
 py==1.9.0
 pyasn1==0.4.8
