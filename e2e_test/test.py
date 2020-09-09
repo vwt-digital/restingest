@@ -277,7 +277,7 @@ class E2ETest(unittest.TestCase):
         Positive test which posts json using oauth
         """
         # oauth_headers = {"Content-Type: application/x-www-form-urlencoded"}
-        oauth_data = {"client_id": "47ae5f24-b920-4d55-b67c-933d53d23cad",
+        oauth_data = {"client_id": "8a2c4e28-9df1-4b89-a32b-31d004641e1e",
                       "scope": "https://" + self._domain.replace("-dat", "") + "/.default",
                       "client_secret": self._test_token,
                       "grant_type": "client_credentials"}
