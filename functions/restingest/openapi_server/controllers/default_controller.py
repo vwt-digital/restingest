@@ -44,26 +44,29 @@ def clear_keys_from_list(body, allowed):
 
 
 def store_blobs(destination_path, blob_data, content_type, should_apply_pii_filter):
-    url, method = request.base_url.replace(request.host_url, '/'), request.method.lower()
-    json_schema = current_app.paths[url][method]['requestBody']['content']['application/json']['schema']['$ref']
 
     attribute_option, schema = None, None
     allowed_attributes = []
 
-    if json_schema and current_app.schemas:
-        schema = current_app.schemas[json_schema.split('/')[-1]]
-        attribute_option = schema.get('x-strict-attributes')
+    if content_type == 'application/json':
 
-    if schema and attribute_option == 'strict':
+        url, method = request.base_url.replace(request.host_url, '/'), request.method.lower()
+        json_schema = current_app.paths[url][method]['requestBody']['content']['application/json']['schema']['$ref']
 
-        def _get_schema_keys(dictionary):
-            for key, value in dictionary.items():
-                if type(value) is dict and key != 'properties':
-                    allowed_attributes.append(key)
-                if type(value) is dict:
-                    _get_schema_keys(value)
+        if json_schema and current_app.schemas:
+            schema = current_app.schemas[json_schema.split('/')[-1]]
+            attribute_option = schema.get('x-strict-attributes')
 
-        _get_schema_keys(schema)
+        if schema and attribute_option == 'strict':
+
+            def _get_schema_keys(dictionary):
+                for key, value in dictionary.items():
+                    if type(value) is dict and key != 'properties':
+                        allowed_attributes.append(key)
+                    if type(value) is dict:
+                        _get_schema_keys(value)
+
+            _get_schema_keys(schema)
 
     if content_type in ['text/xml', 'application/xml', 'application/xml-external-parsed-entity',
                         'text/xml-external-parsed-entity', 'application/xml-dtd']:
