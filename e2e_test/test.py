@@ -3,6 +3,7 @@ import os
 import datetime
 import requests
 import unittest
+import config
 from google.cloud import storage
 
 
@@ -296,12 +297,11 @@ class E2ETest(unittest.TestCase):
         """
         Positive test which posts json using oauth
         """
-        oauth_data = {"client_id": "8a2c4e28-9df1-4b89-a32b-31d004641e1e",
-                      "scope": "https://" + self._domain.replace("-dat", "") + "-e2e/.default",
+        oauth_data = {"client_id": config.OAUTH_CLIENT_ID,
+                      "scope": config.OAUTH_EXPECTED_AUDIENCE + "/.default",
                       "client_secret": self._test_token,
                       "grant_type": "client_credentials"}
-        token = requests.post('https://login.microsoftonline.com/be36ab0a-ee39-47de-9356-a8a501a9c832/'
-                              'oauth2/v2.0/token', data=oauth_data)
+        token = requests.post(config.OAUTH_TOKEN_URL, data=oauth_data)
         token_data = token.json()
 
         headers = {"Authorization": "Bearer " + token_data['access_token']}
