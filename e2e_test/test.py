@@ -277,7 +277,6 @@ class E2ETest(unittest.TestCase):
         """
         Positive test which posts json using oauth
         """
-        # oauth_headers = {"Content-Type: application/x-www-form-urlencoded"}
         oauth_data = {"client_id": "8a2c4e28-9df1-4b89-a32b-31d004641e1e",
                       "scope": "https://" + self._domain.replace("-dat", "") + "-e2e/.default",
                       "client_secret": self._test_token,
@@ -287,7 +286,8 @@ class E2ETest(unittest.TestCase):
         print(token.json())
         token_data = token.json()
 
-        headers = {"Authorization": "Bearer " + token_data['access_token']}
+        headers = {"Authorization": "Bearer " + token_data['access_token'],
+                   "Content-type": "application/json"}
 
         payload = {"ID": "1"}
 
