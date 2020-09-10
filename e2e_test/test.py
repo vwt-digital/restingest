@@ -55,8 +55,42 @@ class E2ETest(unittest.TestCase):
         blob = sorted(blobs, key=lambda tup: tup[1])[-1][0]
         data = json.loads(blob.download_as_string(client=None))
         try:
-            self.assertFalse(does_nested_key_exists(data, 'title'))
-            self.assertFalse(does_nested_key_exists(data, 'date'))
+            self.assertFalse(does_nested_key_exists(data, 'type'))
+        except AssertionError as e:
+            raise type(e)(str(e))
+
+    def test_get_json_stg_store_generic_strict(self):
+        """
+        Creates post request with parameters to get json and stores into storage in specific path.
+        Generic functionality, should pass.
+        """
+        params = {
+            'geturl': 'generics-json-strict',
+            'storepath': 'generics-json-strict'
+        }
+        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
+                          '-request-ingest-func/generics-json-strict', params=params)
+        try:
+            self.assertTrue(199 < r.status_code < 300)
+        except AssertionError as e:
+            raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
+
+    def test_get_strict_filter_on_json(self):
+        """
+        Uses blob stored in last test step.
+        Generic functionality, should pass.
+        """
+        now = datetime.datetime.utcnow()
+        location = 'test/e2e/generics-json-strict/%04d/%02d/%02d' % (now.year, now.month, now.day)
+        blobs = [(blob, blob.updated) for blob in self.storage_client.list_blobs(
+            self._storage_bucket,
+            prefix=location,
+        )]
+        blob = sorted(blobs, key=lambda tup: tup[1])[-1][0]
+        data = json.loads(blob.download_as_string(client=None))
+        try:
+            self.assertFalse(does_nested_key_exists(data, 'items'))
+            self.assertFalse(does_nested_key_exists(data, 'author'))
         except AssertionError as e:
             raise type(e)(str(e))
 
