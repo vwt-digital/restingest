@@ -24,6 +24,8 @@ class BaseApp:
         CORS(self.cxnapp.app)
         with self.cxnapp.app.app_context():
             current_app.__pii_filter_def__ = None
+            current_app.schemas = None
+            current_app.paths = None
             current_app.base_path = config.BASE_PATH
             current_app.cloudstorage = []
             current_app.cloudlogstorage = []
@@ -50,6 +52,10 @@ class BaseApp:
                 self.cxnapp.app.__pii_filter_def__ = raw['x-pii-filter']
             else:
                 self.cxnapp.app.__pii_filter_def__ = []
+
+            if 'components' in raw:
+                self.cxnapp.app.schemas = raw['components'].get('schemas', [])
+            self.cxnapp.app.paths = raw.get('paths')
 
         if method == 'POST' or method == 'OPTIONS' or method == 'GET':
             if 'request' in type:

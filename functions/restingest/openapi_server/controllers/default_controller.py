@@ -34,7 +34,37 @@ def apply_pii_filter(body, pii_filter):
     return filtered_body
 
 
+def clear_keys_from_list(body, allowed):
+    for k, v in body.copy().items():
+        if k not in allowed:
+            del body[k]
+        if isinstance(v, dict):
+            clear_keys_from_list(v, allowed)
+    return body
+
+
 def store_blobs(destination_path, blob_data, content_type, should_apply_pii_filter):
+    url, method = request.base_url.replace(request.host_url, '/'), request.method.lower()
+    json_schema = current_app.paths[url][method]['requestBody']['content']['application/json']['schema']['$ref']
+
+    attribute_option, schema = None, None
+    allowed_attributes = []
+
+    if json_schema and current_app.schemas:
+        schema = current_app.schemas[json_schema.split('/')[-1]]
+        attribute_option = schema.get('x-strict-attributes')
+
+    if schema and attribute_option == 'strict':
+
+        def _get_schema_keys(dictionary):
+            for key, value in dictionary.items():
+                if type(value) is dict and key != 'properties':
+                    allowed_attributes.append(key)
+                if type(value) is dict:
+                    _get_schema_keys(value)
+
+        _get_schema_keys(schema)
+
     if content_type in ['text/xml', 'application/xml', 'application/xml-external-parsed-entity',
                         'text/xml-external-parsed-entity', 'application/xml-dtd']:
 
@@ -50,7 +80,13 @@ def store_blobs(destination_path, blob_data, content_type, should_apply_pii_filt
 
         blob_data = ET.tostring(xml_tree)
 
-    if should_apply_pii_filter:
+    if attribute_option == 'strict' and allowed_attributes:
+        logging.info('Running with strict attribute rules')
+        if type(blob_data) != list and type(blob_data) != dict:
+            blob_data = json.loads(blob_data)
+        blob_data = json.dumps(clear_keys_from_list(blob_data, allowed_attributes))
+
+    if should_apply_pii_filter and (not attribute_option or attribute_option in ['filter', 'strict']):
         if type(blob_data) != list and type(blob_data) != dict:
             blob_data_to_filter = json.loads(blob_data)
         else:

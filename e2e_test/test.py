@@ -6,6 +6,15 @@ import unittest
 from google.cloud import storage
 
 
+def does_nested_key_exists(nested_dict, nested_key):
+    exists = nested_key in nested_dict
+    if not exists:
+        for key, value in nested_dict.items():
+            if isinstance(value, dict):
+                exists = exists or does_nested_key_exists(value, nested_key)
+    return exists
+
+
 class E2ETest(unittest.TestCase):
     _domain = os.environ["domain"]
     _storage_bucket = os.environ["bucket"]
@@ -46,14 +55,6 @@ class E2ETest(unittest.TestCase):
         blob = sorted(blobs, key=lambda tup: tup[1])[-1][0]
         data = json.loads(blob.download_as_string(client=None))
         try:
-            def does_nested_key_exists(nested_dict, nested_key):
-                exists = nested_key in nested_dict
-                if not exists:
-                    for key, value in nested_dict.items():
-                        if isinstance(value, dict):
-                            exists = exists or does_nested_key_exists(value, nested_key)
-                return exists
-
             self.assertFalse(does_nested_key_exists(data, 'title'))
             self.assertFalse(does_nested_key_exists(data, 'date'))
         except AssertionError as e:
