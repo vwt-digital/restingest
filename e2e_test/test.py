@@ -273,7 +273,7 @@ class E2ETest(unittest.TestCase):
 
         headers = {"Authorization": "Bearer " + token_data['access_token']}
 
-        payload = {"ID": "1"}
+        payload = {"ID": 1}
 
         r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
                           '-receive-ingest-func/store-json-oauth', headers=headers, json=payload)
