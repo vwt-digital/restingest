@@ -172,21 +172,6 @@ class E2ETest(unittest.TestCase):
         except AssertionError as e:
             raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
 
-    #
-    # def test_post_json_no_auth_urlencoded_pos(self):
-    #     data = json.dumps({'ID': 1})
-    #     headers = {
-    #         "Content-type": "application/x-www-form-urlencoded"
-    #     }
-    #
-    #     r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-    #                       '-receive-ingest-func/store-json', data=data, headers=headers)
-    #
-    #     try:
-    #         self.assertTrue(199 < r.status_code < 300)
-    #     except AssertionError as e:
-    #         raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
-
     def test_post_json_no_auth_path_neg(self):
         """
         Negative test for posting with no path
@@ -286,13 +271,12 @@ class E2ETest(unittest.TestCase):
         print(token.json())
         token_data = token.json()
 
-        headers = {"Authorization": "Bearer " + token_data['access_token'],
-                   "Content-type": "application/json"}
+        headers = {"Authorization": "Bearer " + token_data['access_token']}
 
         payload = {"ID": "1"}
 
         r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-receive-ingest-func/store-json-oauth', headers=headers, data=payload)
+                          '-receive-ingest-func/store-json-oauth', headers=headers, json=payload)
 
         try:
             self.assertTrue(199 < r.status_code < 300)
