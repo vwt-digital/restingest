@@ -282,19 +282,11 @@ class E2ETest(unittest.TestCase):
         except AssertionError as e:
             raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
 
-    def test_post_json_oauth_secret_neg(self):
+    def test_post_json_oauth_token_neg(self):
         """
-        Negative test which posts json using oauth with an invalid secret
+        Negative test which posts json using oauth with an invalid token
         """
-        oauth_data = {"client_id": "8a2c4e28-9df1-4b89-a32b-31d004641e1e",
-                      "scope": "https://" + self._domain.replace("-dat", "") + "-e2e/.default",
-                      "client_secret": "invalid",
-                      "grant_type": "client_credentials"}
-        token = requests.post('https://login.microsoftonline.com/be36ab0a-ee39-47de-9356-a8a501a9c832/'
-                              'oauth2/v2.0/token', data=oauth_data)
-        token_data = token.json()
-
-        headers = {"Authorization": "Bearer " + token_data['access_token']}
+        headers = {"Authorization": "Bearer ksjjfdisj09jf912m1092m19"}
 
         payload = {"ID": 1}
 
