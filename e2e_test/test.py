@@ -5,7 +5,8 @@ import requests
 import unittest
 import config
 
-from google.cloud import secretmanager, storage
+from google.cloud import storage
+from google.cloud import secretmanager
 
 
 def get_secret():
