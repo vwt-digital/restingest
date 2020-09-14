@@ -4,7 +4,20 @@ import datetime
 import requests
 import unittest
 import config
-from google.cloud import storage
+
+from google.cloud import secretmanager, storage
+
+
+def get_secret():
+
+    client = secretmanager.SecretManagerServiceClient()
+
+    secret_name = client.secret_version_path(os.environ['domain'], os.environ['key_name'], 'latest')
+
+    response = client.access_secret_version(secret_name)
+    payload = response.payload.data.decode('UTF-8').replace('\n', '')
+
+    return payload
 
 
 def does_nested_key_exists(nested_dict, nested_key):
@@ -297,9 +310,12 @@ class E2ETest(unittest.TestCase):
         """
         Positive test which posts json using oauth
         """
+
+        secret = get_secret()
+
         oauth_data = {"client_id": config.OAUTH_CLIENT_ID,
                       "scope": config.OAUTH_EXPECTED_AUDIENCE + "/.default",
-                      "client_secret": self._test_token,
+                      "client_secret": secret,
                       "grant_type": "client_credentials"}
         token = requests.post(config.OAUTH_TOKEN_URL, data=oauth_data)
         token_data = token.json()
