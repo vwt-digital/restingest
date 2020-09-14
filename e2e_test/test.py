@@ -21,6 +21,9 @@ def get_secret():
     return payload
 
 
+secret = get_secret()
+
+
 def does_nested_key_exists(nested_dict, nested_key):
     exists = nested_key in nested_dict
     if not exists:
@@ -311,8 +314,6 @@ class E2ETest(unittest.TestCase):
         """
         Positive test which posts json using oauth
         """
-
-        secret = get_secret()
 
         oauth_data = {"client_id": config.OAUTH_CLIENT_ID,
                       "scope": config.OAUTH_EXPECTED_AUDIENCE + "/.default",
