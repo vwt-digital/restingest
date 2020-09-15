@@ -51,7 +51,11 @@ def store_blobs(destination_path, blob_data, content_type, should_apply_pii_filt
     if content_type == 'application/json':
 
         url, method = request.base_url.replace(request.host_url, '/'), request.method.lower()
-        json_schema = current_app.paths[url][method]['requestBody']['content']['application/json']['schema']['$ref']
+        json_schema = None
+        try:
+            json_schema = current_app.paths[url][method]['requestBody']['content']['application/json']['schema']['$ref']
+        except KeyError:
+            pass
 
         if json_schema and current_app.schemas:
             schema = current_app.schemas[json_schema.split('/')[-1]]
