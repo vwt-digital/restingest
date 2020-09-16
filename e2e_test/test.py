@@ -36,7 +36,6 @@ def does_nested_key_exists(nested_dict, nested_key):
 class E2ETest(unittest.TestCase):
     _domain = os.environ["domain"]
     _storage_bucket = os.environ["bucket"]
-    _test_token = os.environ["test_token"]
     storage_client = storage.Client()
     _blob_path = ''
 
