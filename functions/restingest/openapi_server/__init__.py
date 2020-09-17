@@ -30,14 +30,16 @@ class BaseApp:
             current_app.cloudstorage = []
             current_app.cloudlogstorage = []
 
+            compression = config.COMPRESSION if hasattr(config, 'COMPRESSION') else False
+
             if hasattr(config, 'AZURE_STORAGE_ACCOUNT'):
                 current_app.cloudstorage.append(AzureCloudStorage(config.AZURE_STORAGE_ACCOUNT,
                                                                   config.AZURE_STORAGE_KEY,
                                                                   config.AZURE_STORAGE_CONTAINER))
             if hasattr(config, 'GOOGLE_STORAGE_BUCKET'):
-                current_app.cloudstorage.append(GoogleCloudStorage(config.GOOGLE_STORAGE_BUCKET))
+                current_app.cloudstorage.append(GoogleCloudStorage(config.GOOGLE_STORAGE_BUCKET, compression))
             if hasattr(config, 'GOOGLE_LOG_BUCKET'):
-                current_app.cloudlogstorage.append(GoogleCloudStorage(config.GOOGLE_LOG_BUCKET))
+                current_app.cloudlogstorage.append(GoogleCloudStorage(config.GOOGLE_LOG_BUCKET, compression))
 
     def get_cxnapp(self):
         return self.cxnapp
