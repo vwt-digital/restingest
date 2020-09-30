@@ -4,6 +4,7 @@ import config
 
 from flask import current_app
 from flask_cors import CORS
+from Flask_AuditLog import AuditLog
 from azurecloudstorage import AzureCloudStorage
 from googlecloudstorage import GoogleCloudStorage
 
@@ -17,21 +18,28 @@ class BaseApp:
     def __init__(self):
         self.cxnapp = connexion.App(__name__, specification_dir='openapi/')
         self.cxnapp.add_api('openapi.yaml')
+
+        AuditLog(self.cxnapp)
+
         CORS(self.cxnapp.app)
         with self.cxnapp.app.app_context():
             current_app.__pii_filter_def__ = None
+            current_app.schemas = None
+            current_app.paths = None
             current_app.base_path = config.BASE_PATH
             current_app.cloudstorage = []
             current_app.cloudlogstorage = []
+
+            compression = config.COMPRESSION if hasattr(config, 'COMPRESSION') else False
 
             if hasattr(config, 'AZURE_STORAGE_ACCOUNT'):
                 current_app.cloudstorage.append(AzureCloudStorage(config.AZURE_STORAGE_ACCOUNT,
                                                                   config.AZURE_STORAGE_KEY,
                                                                   config.AZURE_STORAGE_CONTAINER))
             if hasattr(config, 'GOOGLE_STORAGE_BUCKET'):
-                current_app.cloudstorage.append(GoogleCloudStorage(config.GOOGLE_STORAGE_BUCKET))
+                current_app.cloudstorage.append(GoogleCloudStorage(config.GOOGLE_STORAGE_BUCKET, compression))
             if hasattr(config, 'GOOGLE_LOG_BUCKET'):
-                current_app.cloudlogstorage.append(GoogleCloudStorage(config.GOOGLE_LOG_BUCKET))
+                current_app.cloudlogstorage.append(GoogleCloudStorage(config.GOOGLE_LOG_BUCKET, compression))
 
     def get_cxnapp(self):
         return self.cxnapp
@@ -46,6 +54,10 @@ class BaseApp:
                 self.cxnapp.app.__pii_filter_def__ = raw['x-pii-filter']
             else:
                 self.cxnapp.app.__pii_filter_def__ = []
+
+            if 'components' in raw:
+                self.cxnapp.app.schemas = raw['components'].get('schemas', [])
+            self.cxnapp.app.paths = raw.get('paths')
 
         if method == 'POST' or method == 'OPTIONS' or method == 'GET':
             if 'request' in type:

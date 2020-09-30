@@ -9,6 +9,9 @@
 # Base path of blobs stored
 BASE_PATH = 'base/path'
 
+# Use brotli compression
+# COMPRESSION = True
+
 # Uncomment and specify to add authentication using OAuth2
 # OAUTH_EXPECTED_AUDIENCE = 'https://expected.audience'
 # OAUTH_EXPECTED_ISSUER = 'https://expected.issuer/'

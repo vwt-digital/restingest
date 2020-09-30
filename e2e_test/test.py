@@ -1,14 +1,41 @@
 import json
 import os
+import datetime
 import requests
 import unittest
+import config
+
 from google.cloud import storage
+from google.cloud import secretmanager
+
+
+def get_secret():
+
+    client = secretmanager.SecretManagerServiceClient()
+
+    secret_name = client.secret_version_path(os.environ['domain'], os.environ['key_name'], 'latest')
+
+    response = client.access_secret_version(secret_name)
+    payload = response.payload.data.decode('UTF-8').replace('\n', '')
+
+    return payload
+
+
+secret = get_secret()
+
+
+def does_nested_key_exists(nested_dict, nested_key):
+    exists = nested_key in nested_dict
+    if not exists:
+        for key, value in nested_dict.items():
+            if isinstance(value, dict):
+                exists = exists or does_nested_key_exists(value, nested_key)
+    return exists
 
 
 class E2ETest(unittest.TestCase):
     _domain = os.environ["domain"]
     _storage_bucket = os.environ["bucket"]
-    _test_token = os.environ["test_token"]
     storage_client = storage.Client()
     _blob_path = ''
 
@@ -26,7 +53,6 @@ class E2ETest(unittest.TestCase):
         }
         r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
                           '-request-ingest-func/generics-json', params=params)
-        self.__class__._blob_path = json.loads(r.text)['path']
         try:
             self.assertTrue(199 < r.status_code < 300)
         except AssertionError as e:
@@ -37,19 +63,51 @@ class E2ETest(unittest.TestCase):
         Uses blob stored in last test step.
         Generic functionality, should pass.
         """
-        blob = self.storage_client.get_bucket(self._storage_bucket).blob(self.__class__._blob_path + '.json')
+        now = datetime.datetime.utcnow()
+        location = 'test/e2e/generics-json/%04d/%02d/%02d' % (now.year, now.month, now.day)
+        blobs = [(blob, blob.updated) for blob in self.storage_client.list_blobs(
+            self._storage_bucket,
+            prefix=location,
+        )]
+        blob = sorted(blobs, key=lambda tup: tup[1])[-1][0]
         data = json.loads(blob.download_as_string(client=None))
         try:
-            def does_nested_key_exists(nested_dict, nested_key):
-                exists = nested_key in nested_dict
-                if not exists:
-                    for key, value in nested_dict.items():
-                        if isinstance(value, dict):
-                            exists = exists or does_nested_key_exists(value, nested_key)
-                return exists
+            self.assertFalse(does_nested_key_exists(data, 'type'))
+        except AssertionError as e:
+            raise type(e)(str(e))
 
-            self.assertFalse(does_nested_key_exists(data, 'title'))
-            self.assertFalse(does_nested_key_exists(data, 'date'))
+    def test_get_json_stg_store_generic_strict(self):
+        """
+        Creates post request with parameters to get json and stores into storage in specific path.
+        Generic functionality, should pass.
+        """
+        params = {
+            'geturl': 'generics-json-strict',
+            'storepath': 'generics-json-strict'
+        }
+        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
+                          '-request-ingest-func/generics-json-strict', params=params)
+        try:
+            self.assertTrue(199 < r.status_code < 300)
+        except AssertionError as e:
+            raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
+
+    def test_get_strict_filter_on_json(self):
+        """
+        Uses blob stored in last test step.
+        Generic functionality, should pass.
+        """
+        now = datetime.datetime.utcnow()
+        location = 'test/e2e/generics-json-strict/%04d/%02d/%02d' % (now.year, now.month, now.day)
+        blobs = [(blob, blob.updated) for blob in self.storage_client.list_blobs(
+            self._storage_bucket,
+            prefix=location,
+        )]
+        blob = sorted(blobs, key=lambda tup: tup[1])[-1][0]
+        data = json.loads(blob.download_as_string(client=None))
+        try:
+            self.assertFalse(does_nested_key_exists(data, 'items'))
+            self.assertFalse(does_nested_key_exists(data, 'author'))
         except AssertionError as e:
             raise type(e)(str(e))
 
@@ -165,21 +223,6 @@ class E2ETest(unittest.TestCase):
         except AssertionError as e:
             raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
 
-    #
-    # def test_post_json_no_auth_urlencoded_pos(self):
-    #     data = json.dumps({'ID': 1})
-    #     headers = {
-    #         "Content-type": "application/x-www-form-urlencoded"
-    #     }
-    #
-    #     r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-    #                       '-receive-ingest-func/store-json', data=data, headers=headers)
-    #
-    #     try:
-    #         self.assertTrue(199 < r.status_code < 300)
-    #     except AssertionError as e:
-    #         raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
-
     def test_post_json_no_auth_path_neg(self):
         """
         Negative test for posting with no path
@@ -270,23 +313,38 @@ class E2ETest(unittest.TestCase):
         """
         Positive test which posts json using oauth
         """
-        # oauth_headers = {"Content-Type: application/x-www-form-urlencoded"}
-        oauth_data = {"client_id": "47ae5f24-b920-4d55-b67c-933d53d23cad",
-                      "scope": "https://" + self._domain.replace("-dat", "") + "/.default openid",
-                      "client_secret": self._test_token,
+
+        oauth_data = {"client_id": config.OAUTH_CLIENT_ID,
+                      "scope": config.OAUTH_EXPECTED_AUDIENCE + "/.default",
+                      "client_secret": secret,
                       "grant_type": "client_credentials"}
-        token = requests.post('https://login.microsoftonline.com/be36ab0a-ee39-47de-9356-a8a501a9c832/'
-                              'oauth2/v2.0/token', data=oauth_data)
+        token = requests.post(config.OAUTH_TOKEN_URL, data=oauth_data)
         token_data = token.json()
 
         headers = {"Authorization": "Bearer " + token_data['access_token']}
 
-        payload = {"ID": "1"}
+        payload = {"ID": 1}
 
         r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-receive-ingest-func/store-json-oauth', headers=headers, data=payload)
+                          '-receive-ingest-func/store-json-oauth', headers=headers, json=payload)
 
         try:
             self.assertTrue(199 < r.status_code < 300)
+        except AssertionError as e:
+            raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
+
+    def test_post_json_oauth_token_neg(self):
+        """
+        Negative test which posts json using oauth with an invalid token
+        """
+        headers = {"Authorization": "Bearer ksjjfdisj09jf912m1092m19"}
+
+        payload = {"ID": 1}
+
+        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
+                          '-receive-ingest-func/store-json-oauth', headers=headers, json=payload)
+
+        try:
+            self.assertFalse(199 < r.status_code < 300)
         except AssertionError as e:
             raise type(e)(str(e) + "\n\n Full response:\n" + r.text)
