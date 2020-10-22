@@ -1,5 +1,5 @@
-# Contributing to {{project}}
-Thank you for contributing to {{project}}! These guidelines might help us understand new issues and enhancements better!
+# Contributing to restingest
+Thank you for contributing to restingest! These guidelines might help us understand new issues and enhancements better!
 
 ## VWT Digital Guidelines
 Read these guidelines before creating issues or requests.
