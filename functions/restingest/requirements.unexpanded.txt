@@ -12,4 +12,5 @@ requests-oauthlib==1.3.0
 Flask-Cors==3.0.10
 Flask-AuditLog==1.0
 swagger-ui-bundle==0.0.8
+openapi-spec-validator==0.2.9
 
