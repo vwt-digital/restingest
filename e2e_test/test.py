@@ -1,22 +1,23 @@
+import datetime
 import json
 import os
-import datetime
-import requests
 import unittest
-import config
 
-from google.cloud import storage
-from google.cloud import secretmanager
+import config
+import requests
+from google.cloud import secretmanager, storage
 
 
 def get_secret():
 
     client = secretmanager.SecretManagerServiceClient()
 
-    secret_name = client.secret_version_path(os.environ['domain'], os.environ['key_name'], 'latest')
+    secret_name = client.secret_version_path(
+        os.environ["domain"], os.environ["key_name"], "latest"
+    )
 
     response = client.access_secret_version(secret_name)
-    payload = response.payload.data.decode('UTF-8').replace('\n', '')
+    payload = response.payload.data.decode("UTF-8").replace("\n", "")
 
     return payload
 
@@ -37,7 +38,7 @@ class E2ETest(unittest.TestCase):
     _domain = os.environ["domain"]
     _storage_bucket = os.environ["bucket"]
     storage_client = storage.Client()
-    _blob_path = ''
+    _blob_path = ""
 
     def test_pos(self):
         self.assertTrue(0xDEADBEEF)
@@ -47,12 +48,15 @@ class E2ETest(unittest.TestCase):
         Creates post request with parameters to get json and stores into storage in specific path.
         Generic functionality, should pass.
         """
-        params = {
-            'geturl': 'generics-json',
-            'storepath': 'generics-json'
-        }
-        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-request-ingest-func/generics-json', params=params)
+        params = {"geturl": "generics-json", "storepath": "generics-json"}
+        r = requests.post(
+            "https://europe-west1-"
+            + self._domain
+            + ".cloudfunctions.net/"
+            + self._domain
+            + "-request-ingest-func/generics-json",
+            params=params,
+        )
         try:
             self.assertTrue(199 < r.status_code < 300)
         except AssertionError as e:
@@ -64,15 +68,22 @@ class E2ETest(unittest.TestCase):
         Generic functionality, should pass.
         """
         now = datetime.datetime.utcnow()
-        location = 'test/e2e/generics-json/%04d/%02d/%02d' % (now.year, now.month, now.day)
-        blobs = [(blob, blob.updated) for blob in self.storage_client.list_blobs(
-            self._storage_bucket,
-            prefix=location,
-        )]
+        location = "test/e2e/generics-json/%04d/%02d/%02d" % (
+            now.year,
+            now.month,
+            now.day,
+        )
+        blobs = [
+            (blob, blob.updated)
+            for blob in self.storage_client.list_blobs(
+                self._storage_bucket,
+                prefix=location,
+            )
+        ]
         blob = sorted(blobs, key=lambda tup: tup[1])[-1][0]
         data = json.loads(blob.download_as_string(client=None))
         try:
-            self.assertFalse(does_nested_key_exists(data, 'type'))
+            self.assertFalse(does_nested_key_exists(data, "type"))
         except AssertionError as e:
             raise type(e)(str(e))
 
@@ -81,12 +92,15 @@ class E2ETest(unittest.TestCase):
         Creates post request with parameters to get json and stores into storage in specific path.
         Generic functionality, should pass.
         """
-        params = {
-            'geturl': 'generics-json-strict',
-            'storepath': 'generics-json-strict'
-        }
-        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-request-ingest-func/generics-json-strict', params=params)
+        params = {"geturl": "generics-json-strict", "storepath": "generics-json-strict"}
+        r = requests.post(
+            "https://europe-west1-"
+            + self._domain
+            + ".cloudfunctions.net/"
+            + self._domain
+            + "-request-ingest-func/generics-json-strict",
+            params=params,
+        )
         try:
             self.assertTrue(199 < r.status_code < 300)
         except AssertionError as e:
@@ -98,16 +112,23 @@ class E2ETest(unittest.TestCase):
         Generic functionality, should pass.
         """
         now = datetime.datetime.utcnow()
-        location = 'test/e2e/generics-json-strict/%04d/%02d/%02d' % (now.year, now.month, now.day)
-        blobs = [(blob, blob.updated) for blob in self.storage_client.list_blobs(
-            self._storage_bucket,
-            prefix=location,
-        )]
+        location = "test/e2e/generics-json-strict/%04d/%02d/%02d" % (
+            now.year,
+            now.month,
+            now.day,
+        )
+        blobs = [
+            (blob, blob.updated)
+            for blob in self.storage_client.list_blobs(
+                self._storage_bucket,
+                prefix=location,
+            )
+        ]
         blob = sorted(blobs, key=lambda tup: tup[1])[-1][0]
         data = json.loads(blob.download_as_string(client=None))
         try:
-            self.assertFalse(does_nested_key_exists(data, 'items'))
-            self.assertFalse(does_nested_key_exists(data, 'author'))
+            self.assertFalse(does_nested_key_exists(data, "items"))
+            self.assertFalse(does_nested_key_exists(data, "author"))
         except AssertionError as e:
             raise type(e)(str(e))
 
@@ -117,10 +138,16 @@ class E2ETest(unittest.TestCase):
         No storepath is given, should fail.
         """
         params = {
-            'geturl': 'generics-json',
+            "geturl": "generics-json",
         }
-        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-request-ingest-func/generics-json', params=params)
+        r = requests.post(
+            "https://europe-west1-"
+            + self._domain
+            + ".cloudfunctions.net/"
+            + self._domain
+            + "-request-ingest-func/generics-json",
+            params=params,
+        )
         try:
             self.assertFalse(199 < r.status_code < 300)
         except AssertionError as e:
@@ -131,17 +158,33 @@ class E2ETest(unittest.TestCase):
         Creates post request with parameter to get json and stores into storage in base path.
         Invalid parameters are given, should fail.
         """
-        get_url = 'generics-json'
-        key_store_path = 'storepath'
-        key_get_url = 'geturl'
-        param_list = {1: {key_get_url: 1, key_store_path: 'generics'}, 2: {key_get_url: get_url, key_store_path: '_'},
-                      3: {key_get_url: get_url,
-                          key_store_path: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaaaaaaaaaaaaaaaa'
-                                          '############@@@@AAAAAAAAAAAAEEEEEEEEEEEEEEEEEEEEEEEE '}}
+        get_url = "generics-json"
+        key_store_path = "storepath"
+        key_get_url = "geturl"
+        param_list = {
+            1: {key_get_url: 1, key_store_path: "generics"},
+            2: {key_get_url: get_url, key_store_path: "_"},
+            3: {
+                key_get_url: get_url,
+                key_store_path: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaaaaaaaaaaaaaaaa"
+                "############@@@@AAAAAAAAAAAAEEEEEEEEEEEEEEEEEEEEEEEE ",
+            },
+        }
         for params in param_list.values():
-            print('Testing with geturl: ' + str(params['geturl']) + ' and storepath: ' + str(params['storepath']))
-            r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                              '-request-ingest-func/generics-json', params=params)
+            print(
+                "Testing with geturl: "
+                + str(params["geturl"])
+                + " and storepath: "
+                + str(params["storepath"])
+            )
+            r = requests.post(
+                "https://europe-west1-"
+                + self._domain
+                + ".cloudfunctions.net/"
+                + self._domain
+                + "-request-ingest-func/generics-json",
+                params=params,
+            )
             try:
                 self.assertFalse(199 < r.status_code < 300)
             except AssertionError as e:
@@ -152,12 +195,15 @@ class E2ETest(unittest.TestCase):
         Creates post request with parameter to get json and stores into storage in base path.
         Invalid parameters are given, should fail.
         """
-        params = {
-            'NO_ID': 'no_id',
-            'Args': 'args'
-        }
-        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-request-ingest-func/generics-json', params=params)
+        params = {"NO_ID": "no_id", "Args": "args"}
+        r = requests.post(
+            "https://europe-west1-"
+            + self._domain
+            + ".cloudfunctions.net/"
+            + self._domain
+            + "-request-ingest-func/generics-json",
+            params=params,
+        )
         try:
             self.assertFalse(199 < r.status_code < 300)
         except AssertionError as e:
@@ -168,8 +214,13 @@ class E2ETest(unittest.TestCase):
         Creates post request without parameters to get json and stores into storage.
         No parameters passed, should fail.
         """
-        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-request-ingest-func/generics-json')
+        r = requests.post(
+            "https://europe-west1-"
+            + self._domain
+            + ".cloudfunctions.net/"
+            + self._domain
+            + "-request-ingest-func/generics-json"
+        )
         try:
             self.assertFalse(199 < r.status_code < 300)
         except AssertionError as e:
@@ -180,12 +231,15 @@ class E2ETest(unittest.TestCase):
         Creates post request with parameters to get text and stores into storage in specific path.
         Generic functionality, should pass.
         """
-        params = {
-            'geturl': 'generics-text',
-            'storepath': 'generics-text'
-        }
-        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-request-ingest-func/generics-text', params=params)
+        params = {"geturl": "generics-text", "storepath": "generics-text"}
+        r = requests.post(
+            "https://europe-west1-"
+            + self._domain
+            + ".cloudfunctions.net/"
+            + self._domain
+            + "-request-ingest-func/generics-text",
+            params=params,
+        )
         try:
             self.assertTrue(199 < r.status_code < 300)
         except AssertionError as e:
@@ -196,12 +250,15 @@ class E2ETest(unittest.TestCase):
         Creates post request with parameters to get xml and stores into storage in specific path.
         Generic functionality, should pass.
         """
-        params = {
-            'geturl': 'generics-xml',
-            'storepath': 'generics-xml'
-        }
-        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-request-ingest-func/generics-xml', params=params)
+        params = {"geturl": "generics-xml", "storepath": "generics-xml"}
+        r = requests.post(
+            "https://europe-west1-"
+            + self._domain
+            + ".cloudfunctions.net/"
+            + self._domain
+            + "-request-ingest-func/generics-xml",
+            params=params,
+        )
         try:
             self.assertTrue(199 < r.status_code < 300)
         except AssertionError as e:
@@ -211,12 +268,16 @@ class E2ETest(unittest.TestCase):
         """
         Positive test with basic configuration
         """
-        payload = {
-            'ID': 1
-        }
+        payload = {"ID": 1}
 
-        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-receive-ingest-func/store-json', json=payload)
+        r = requests.post(
+            "https://europe-west1-"
+            + self._domain
+            + ".cloudfunctions.net/"
+            + self._domain
+            + "-receive-ingest-func/store-json",
+            json=payload,
+        )
 
         try:
             self.assertTrue(199 < r.status_code < 300)
@@ -227,12 +288,16 @@ class E2ETest(unittest.TestCase):
         """
         Negative test for posting with no path
         """
-        payload = {
-            'ID': 2
-        }
+        payload = {"ID": 2}
 
-        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-receive-ingest-func/', json=payload)
+        r = requests.post(
+            "https://europe-west1-"
+            + self._domain
+            + ".cloudfunctions.net/"
+            + self._domain
+            + "-receive-ingest-func/",
+            json=payload,
+        )
         try:
             self.assertFalse(199 < r.status_code < 300)
         except AssertionError as e:
@@ -242,8 +307,13 @@ class E2ETest(unittest.TestCase):
         """
         Negative test for posting without a request body (payload)
         """
-        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-receive-ingest-func/store-json')
+        r = requests.post(
+            "https://europe-west1-"
+            + self._domain
+            + ".cloudfunctions.net/"
+            + self._domain
+            + "-receive-ingest-func/store-json"
+        )
         try:
             self.assertFalse(199 < r.status_code < 300)
         except AssertionError as e:
@@ -253,12 +323,16 @@ class E2ETest(unittest.TestCase):
         """
         Negative test for incorrect schema
         """
-        payload = {
-            'NOT_ID': "test"
-        }
+        payload = {"NOT_ID": "test"}
 
-        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-receive-ingest-func/store-json', json=payload)
+        r = requests.post(
+            "https://europe-west1-"
+            + self._domain
+            + ".cloudfunctions.net/"
+            + self._domain
+            + "-receive-ingest-func/store-json",
+            json=payload,
+        )
         try:
             self.assertFalse(199 < r.status_code < 300)
         except AssertionError as e:
@@ -269,10 +343,17 @@ class E2ETest(unittest.TestCase):
         Negative test which expects store-json to not accept xml
         """
         payload = "test"
-        headers = {'Content-type': 'text/xml'}
+        headers = {"Content-type": "text/xml"}
 
-        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-receive-ingest-func/store-json', data=payload, headers=headers)
+        r = requests.post(
+            "https://europe-west1-"
+            + self._domain
+            + ".cloudfunctions.net/"
+            + self._domain
+            + "-receive-ingest-func/store-json",
+            data=payload,
+            headers=headers,
+        )
 
         try:
             self.assertFalse(199 < r.status_code < 300)
@@ -284,10 +365,17 @@ class E2ETest(unittest.TestCase):
         Positive test with basic config
         """
         payload = "<?xml version='1.0' encoding='utf-8'?><test attr1='attr1'>0</test>"
-        headers = {'Content-type': 'application/xml'}
+        headers = {"Content-type": "application/xml"}
 
-        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-receive-ingest-func/store-xml', data=payload, headers=headers)
+        r = requests.post(
+            "https://europe-west1-"
+            + self._domain
+            + ".cloudfunctions.net/"
+            + self._domain
+            + "-receive-ingest-func/store-xml",
+            data=payload,
+            headers=headers,
+        )
 
         try:
             self.assertTrue(199 < r.status_code < 300)
@@ -301,8 +389,15 @@ class E2ETest(unittest.TestCase):
         payload = {"json": "test"}
 
         headers = {"Content-type": "application/json"}
-        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-receive-ingest-func/store-xml', data=payload, headers=headers)
+        r = requests.post(
+            "https://europe-west1-"
+            + self._domain
+            + ".cloudfunctions.net/"
+            + self._domain
+            + "-receive-ingest-func/store-xml",
+            data=payload,
+            headers=headers,
+        )
 
         try:
             self.assertFalse(199 < r.status_code < 300)
@@ -314,19 +409,28 @@ class E2ETest(unittest.TestCase):
         Positive test which posts json using oauth
         """
 
-        oauth_data = {"client_id": config.OAUTH_CLIENT_ID,
-                      "scope": config.OAUTH_EXPECTED_AUDIENCE + "/.default",
-                      "client_secret": secret,
-                      "grant_type": "client_credentials"}
+        oauth_data = {
+            "client_id": config.OAUTH_CLIENT_ID,
+            "scope": config.OAUTH_EXPECTED_AUDIENCE + "/.default",
+            "client_secret": secret,
+            "grant_type": "client_credentials",
+        }
         token = requests.post(config.OAUTH_TOKEN_URL, data=oauth_data)
         token_data = token.json()
 
-        headers = {"Authorization": "Bearer " + token_data['access_token']}
+        headers = {"Authorization": "Bearer " + token_data["access_token"]}
 
         payload = {"ID": 1}
 
-        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-receive-ingest-func/store-json-oauth', headers=headers, json=payload)
+        r = requests.post(
+            "https://europe-west1-"
+            + self._domain
+            + ".cloudfunctions.net/"
+            + self._domain
+            + "-receive-ingest-func/store-json-oauth",
+            headers=headers,
+            json=payload,
+        )
 
         try:
             self.assertTrue(199 < r.status_code < 300)
@@ -341,8 +445,15 @@ class E2ETest(unittest.TestCase):
 
         payload = {"ID": 1}
 
-        r = requests.post('https://europe-west1-' + self._domain + '.cloudfunctions.net/' + self._domain +
-                          '-receive-ingest-func/store-json-oauth', headers=headers, json=payload)
+        r = requests.post(
+            "https://europe-west1-"
+            + self._domain
+            + ".cloudfunctions.net/"
+            + self._domain
+            + "-receive-ingest-func/store-json-oauth",
+            headers=headers,
+            json=payload,
+        )
 
         try:
             self.assertFalse(199 < r.status_code < 300)

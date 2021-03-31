@@ -1,16 +1,12 @@
-import logging
 import datetime
 import json
+import logging
 import mimetypes
-import requests
 import uuid
 
-from flask import jsonify
-from flask import make_response
-from flask import current_app
-from flask import request
-
+import requests
 from defusedxml import ElementTree as defusedxml_ET
+from flask import current_app, jsonify, make_response, request
 from lxml import etree as ET  # nosec
 
 
@@ -43,37 +39,49 @@ def clear_keys_from_list(body, allowed):
     return body
 
 
-def store_blobs(destination_path, blob_data, content_type, should_apply_pii_filter):
+def store_blobs(  # noqa: C901
+    destination_path, blob_data, content_type, should_apply_pii_filter
+):
 
     attribute_option, schema = None, None
     allowed_attributes = []
 
-    if content_type == 'application/json':
+    if content_type == "application/json":
 
-        url, method = request.base_url.replace(request.host_url, '/'), request.method.lower()
+        url, method = (
+            request.base_url.replace(request.host_url, "/"),
+            request.method.lower(),
+        )
         json_schema = None
         try:
-            json_schema = current_app.paths[url][method]['requestBody']['content']['application/json']['schema']['$ref']
+            json_schema = current_app.paths[url][method]["requestBody"]["content"][
+                "application/json"
+            ]["schema"]["$ref"]
         except KeyError:
             pass
 
         if json_schema and current_app.schemas:
-            schema = current_app.schemas[json_schema.split('/')[-1]]
-            attribute_option = schema.get('x-strict-attributes')
+            schema = current_app.schemas[json_schema.split("/")[-1]]
+            attribute_option = schema.get("x-strict-attributes")
 
-        if schema and attribute_option == 'strict':
+        if schema and attribute_option == "strict":
 
             def _get_schema_keys(dictionary):
                 for key, value in dictionary.items():
-                    if type(value) is dict and key != 'properties':
+                    if type(value) is dict and key != "properties":
                         allowed_attributes.append(key)
                     if type(value) is dict:
                         _get_schema_keys(value)
 
             _get_schema_keys(schema)
 
-    if content_type in ['text/xml', 'application/xml', 'application/xml-external-parsed-entity',
-                        'text/xml-external-parsed-entity', 'application/xml-dtd']:
+    if content_type in [
+        "text/xml",
+        "application/xml",
+        "application/xml-external-parsed-entity",
+        "text/xml-external-parsed-entity",
+        "application/xml-dtd",
+    ]:
 
         # Run blob_data through defusedxml's ElementTree first to mitigate exposure from XML attacks
         safe_xml_tree = defusedxml_ET.fromstring(blob_data)
@@ -87,25 +95,29 @@ def store_blobs(destination_path, blob_data, content_type, should_apply_pii_filt
 
         blob_data = ET.tostring(xml_tree)
 
-    if attribute_option == 'strict' and allowed_attributes:
-        logging.info('Running with strict attribute rules')
+    if attribute_option == "strict" and allowed_attributes:
+        logging.info("Running with strict attribute rules")
         if type(blob_data) != list and type(blob_data) != dict:
             blob_data = json.loads(blob_data)
         blob_data = json.dumps(clear_keys_from_list(blob_data, allowed_attributes))
 
-    if should_apply_pii_filter and (not attribute_option or attribute_option in ['filter', 'strict']):
+    if should_apply_pii_filter and (
+        not attribute_option or attribute_option in ["filter", "strict"]
+    ):
         if type(blob_data) != list and type(blob_data) != dict:
             blob_data_to_filter = json.loads(blob_data)
         else:
             blob_data_to_filter = blob_data
-        blob_data_pii = json.dumps(apply_pii_filter(blob_data_to_filter, current_app.__pii_filter_def__))
+        blob_data_pii = json.dumps(
+            apply_pii_filter(blob_data_to_filter, current_app.__pii_filter_def__)
+        )
     else:
         blob_data_pii = blob_data
 
     if type(blob_data) == list or type(blob_data) == dict:
         blob_data = json.dumps(blob_data)
 
-    logging.info('Storing blob data on path: {}'.format(destination_path))
+    logging.info("Storing blob data on path: {}".format(destination_path))
 
     for cs in current_app.cloudstorage:
         cs.storeBlob(destination_path, blob_data_pii, content_type)
@@ -114,44 +126,91 @@ def store_blobs(destination_path, blob_data, content_type, should_apply_pii_filt
         cs.storeBlob(destination_path, blob_data, content_type)
 
 
-def generic_post(body):
+def generic_post(body):  # noqa: C901
     extension = mimetypes.guess_extension(request.mimetype)
     now = datetime.datetime.utcnow()
 
-    timestamp = '%04d%02d%02dT%02d%02d%02dZ' % (now.year, now.month, now.day,
-                                                now.hour, now.minute, now.second)
+    timestamp = "%04d%02d%02dT%02d%02d%02dZ" % (
+        now.year,
+        now.month,
+        now.day,
+        now.hour,
+        now.minute,
+        now.second,
+    )
 
-    take_skip = f"_{request.headers['X-Take-Skip']}" if 'X-Take-Skip' in request.headers else ''
-    destination_path = '%s%s/%04d/%02d/%02d/%s%s-%s' % (current_app.base_path, request.path,
-                                                        now.year, now.month, now.day, timestamp, take_skip,
-                                                        str(uuid.uuid4()))
+    take_skip = (
+        f"_{request.headers['X-Take-Skip']}" if "X-Take-Skip" in request.headers else ""
+    )
+    destination_path = "%s%s/%04d/%02d/%02d/%s%s-%s" % (
+        current_app.base_path,
+        request.path,
+        now.year,
+        now.month,
+        now.day,
+        timestamp,
+        take_skip,
+        str(uuid.uuid4()),
+    )
 
     try:
         if body:
-            file_destination_path = '%s%s' % (destination_path, (extension if extension else ''))
-            store_blobs(file_destination_path, body, request.mimetype,
-                        (True if 'application/json' in request.mimetype else False))
+            file_destination_path = "%s%s" % (
+                destination_path,
+                (extension if extension else ""),
+            )
+            store_blobs(
+                file_destination_path,
+                body,
+                request.mimetype,
+                (True if "application/json" in request.mimetype else False),
+            )
         elif request.files:
             for index, file in enumerate(request.files, start=1):
-                file_extension = mimetypes.guess_extension(request.files[file].content_type)
-                file_destination_path = '%s/%s_%s%s' % (destination_path, timestamp, index,
-                                                        (file_extension if file_extension else ''))
-                store_blobs(file_destination_path, request.files[file].read(), request.files[file].content_type, False)
+                file_extension = mimetypes.guess_extension(
+                    request.files[file].content_type
+                )
+                file_destination_path = "%s/%s_%s%s" % (
+                    destination_path,
+                    timestamp,
+                    index,
+                    (file_extension if file_extension else ""),
+                )
+                store_blobs(
+                    file_destination_path,
+                    request.files[file].read(),
+                    request.files[file].content_type,
+                    False,
+                )
         elif request.form:
             for data in request.form:
                 new_data = json.loads(request.form[data])
 
                 for index, blob_data in enumerate(new_data, start=1):
-                    file_destination_path = '%s/%s_%s%s' % (destination_path, timestamp, index,
-                                                            (extension if extension else ''))
-                    store_blobs(file_destination_path, blob_data, request.mimetype, False)
+                    file_destination_path = "%s/%s_%s%s" % (
+                        destination_path,
+                        timestamp,
+                        index,
+                        (extension if extension else ""),
+                    )
+                    store_blobs(
+                        file_destination_path, blob_data, request.mimetype, False
+                    )
         elif request.data:
-            file_destination_path = '%s%s' % (destination_path, (extension if extension else ''))
-            store_blobs(file_destination_path, request.data, request.mimetype, ('application/json' in request.mimetype))
+            file_destination_path = "%s%s" % (
+                destination_path,
+                (extension if extension else ""),
+            )
+            store_blobs(
+                file_destination_path,
+                request.data,
+                request.mimetype,
+                ("application/json" in request.mimetype),
+            )
         else:
-            raise ValueError('No correct body provided.')
+            raise ValueError("No correct body provided.")
 
-        return make_response('Created', 201)
+        return make_response("Created", 201)
     except requests.exceptions.ConnectionError as error:
         logging.error(f"An exception occurred when uploading: {str(error)}")
         return make_response(jsonify(str(error)), 400)
