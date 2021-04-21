@@ -34,7 +34,7 @@ isodate==0.6.0
 itsdangerous==1.1.0
 Jinja2==2.11.3
 jsonschema==2.6.0
-jwkaas==0.10
+jwkaas==1.0.0
 libcst==0.3.18
 lxml==4.6.3
 MarkupSafe==1.1.1

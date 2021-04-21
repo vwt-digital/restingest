@@ -2,7 +2,7 @@ azure-storage-blob==2.1.0
 google-cloud-kms==1.4.0
 google-cloud-storage==1.37.0
 google-cloud-secret-manager==2.3.0
-jwkaas==0.10
+jwkaas==1.0.0
 lxml==4.6.3
 connexion==2.2.0
 Werkzeug==0.16.1
