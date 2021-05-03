@@ -1,7 +1,8 @@
 import brotli
 from abstractcloudstorage import CloudStorageInterface
+from google.api_core.exceptions import ServiceUnavailable
 from google.cloud import storage
-from requests.exceptions import ConnectionError, ServiceUnavailable
+from requests.exceptions import ConnectionError
 from retry import retry
 
 
