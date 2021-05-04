@@ -5,6 +5,7 @@ import re
 import config
 from flask import g, request
 from jwkaas import JWKaas
+from requests.exceptions import ConnectionError
 from utils import get_secret
 
 my_jwkaas = None
@@ -41,17 +42,27 @@ def info_from_oauth2(token):
     :rtype: dict | None
     """
 
-    token_info = my_jwkaas.get_token_info(token)
+    token_info = get_token_info(token)
 
     if not token_info and "X-Orig-Auth" in request.headers:
         logging.info(
             "Validation of 'Authorization' header failed, trying 'X-Orig-Auth' header"
         )
-        token_info = my_jwkaas.get_token_info(
+        token_info = get_token_info(
             extract_bearer_token(request.headers["X-Orig-Auth"])
         )
 
     return refine_token_info(token_info)
+
+
+def get_token_info(token):
+    try:
+        token_info = my_jwkaas.get_token_info(token)
+    except ConnectionError as e:
+        logging.error(f"An error occurred during retrieval of JWK token: {str(e)}")
+        return None
+    else:
+        return token_info
 
 
 def info_from_apikey(apikey, required_scopes):
