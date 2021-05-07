@@ -12,9 +12,17 @@ Running restingest can be done by one of the following three ways.
 ### 1. Using Flask
 #### Run as a local Flask app
 ~~~
-cd functions/restingest
-export FLASK_APP=openapi_server:app
-flask run
+# Create a virtualenvironment with the correct dependencies
+virtualenv -p python3 venv
+source venv/bin/activate
+pip3 install -r requirements.txt
+
+# Export some variables
+export GOOGLE_CLOUD_PROJECT="project-id"  # Connect the correct GCP project
+export FLASK_ENV="development"  # Enable automatic restart when changes occur
+export FLASK_APP=run_flask_http_receive_store_blob_trigger_func.py  # Either the receive or request file to run locally
+
+flask run  # Run the app
 ~~~
 #### Using the Flask app endpoint
 The Flask app will service and endpoint to which a JSON body can be posted, which will then be stored in the cloud storage. When using the default OpenAPI specificition, any JSON will be accepted at the /generic path. For example:
