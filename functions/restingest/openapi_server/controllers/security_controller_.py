@@ -82,6 +82,7 @@ def info_from_apikey(apikey, required_scopes):
         if api_key_secret_conversion == "HMAC-SHA-256":
             body = request.data
             apikeybytes = bytes(apikey, "utf8")
+            logging.info(f"Body: {body}")
             logging.info(f"Temp: {apikeybytes}")
             compute_hash = computeHash(api_key_secret, body)
             logging.info(f"Temp2: {compute_hash}")
