@@ -82,16 +82,15 @@ def info_from_apikey(apikey, required_scopes):
     elif api_key_secret_conversion:
         if api_key_secret_conversion == "HMAC-SHA-256":
             body = request.get_json()
-            body = json.dumps(body)
-            body = bytes(body, "utf8")
-            apikeybytes = bytes(apikey, "utf8")
+            body_str = json.dumps(body)
+            body_bytes = bytes(body_str, "utf8")
+            apikey_bytes = bytes(apikey, "utf8")
+            api_key_secret_bytes = bytes(api_key_secret, "utf8")
+            computed_hash = compute_hash(api_key_secret_bytes, body_bytes)
             logging.info(f"Body: {body}")
-            logging.info(f"Temp: {apikeybytes}")
-            compute_hash = computeHash(api_key_secret, body)
-            logging.info(f"Temp2: {compute_hash}")
-            correct_api_key = hmac.compare_digest(
-                apikeybytes, computeHash(api_key_secret, body)
-            )
+            logging.info(f"Temp: {apikey_bytes}")
+            logging.info(f"Temp2: {computed_hash}")
+            correct_api_key = hmac.compare_digest(apikey_bytes, computed_hash)
             if correct_api_key:
                 g.user = "apikeyuser"
                 return {"sub": "apikeyuser"}
@@ -114,8 +113,8 @@ def extract_bearer_token(token):
     return None
 
 
-def computeHash(secret, payload):
-    secretbytes = bytes(secret, "utf8")
-    hashBytes = hmac.new(secretbytes, msg=payload, digestmod=hashlib.sha256).digest()
-    base64Hash = base64.b64encode(hashBytes)
-    return base64Hash
+def compute_hash(secret, payload):
+    hash_bytes = hmac.new(secret, msg=payload, digestmod=hashlib.sha256).digest()
+    base64_hash = base64.b64encode(hash_bytes)
+    sha_hash = b"sha256=" + base64_hash
+    return sha_hash
