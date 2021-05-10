@@ -81,13 +81,7 @@ def info_from_apikey(apikey, required_scopes):
         )
     elif api_key_secret_conversion:
         if api_key_secret_conversion == "HMAC-SHA-256":
-            body = request.stream.read()
-            if not body:
-                logging.info("Requests stream read was empty, trying requests data")
-                body = request.get_data()
-            else:
-                body_str = json.dumps(body)
-                body = bytes(body_str, "utf8")
+            body = get_request_data(request)
             apikey_bytes = bytes(apikey, "utf8")
             api_key_secret_bytes = bytes(api_key_secret, "utf8")
             logging.info(f"Body: {body}")
@@ -122,3 +116,17 @@ def compute_hash(secret, payload):
     base64_hash = base64.b64encode(hash_bytes)
     sha_hash = b"sha256=" + base64_hash
     return sha_hash
+
+
+def get_request_data(data):
+    if data.is_json:
+        req_body = data.get_json(silent=True)
+        req_body = json.dumps(req_body)
+    else:
+        if data.files:
+            req_body = data.files
+        else:
+            req_body = data.form if data.form else data.data
+    if not isinstance(req_body, bytes):
+        req_body = bytes(req_body, "utf8")
+    return req_body
