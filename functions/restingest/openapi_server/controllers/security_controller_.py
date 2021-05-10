@@ -1,7 +1,6 @@
 import base64
 import hashlib
 import hmac
-import json
 import logging
 import os
 import re
@@ -81,12 +80,10 @@ def info_from_apikey(apikey, required_scopes):
         )
     elif api_key_secret_conversion:
         if api_key_secret_conversion == "HMAC-SHA-256":
-            body = request.get_json()
-            body_str = json.dumps(body)
-            body_bytes = bytes(body_str, "utf8")
+            body = request.get_data()
             apikey_bytes = bytes(apikey, "utf8")
             api_key_secret_bytes = bytes(api_key_secret, "utf8")
-            computed_hash = compute_hash(api_key_secret_bytes, body_bytes)
+            computed_hash = compute_hash(api_key_secret_bytes, body)
             logging.info(f"Body: {body}")
             logging.info(f"Temp: {apikey_bytes}")
             logging.info(f"Temp2: {computed_hash}")
