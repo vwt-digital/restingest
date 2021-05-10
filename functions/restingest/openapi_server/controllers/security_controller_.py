@@ -1,3 +1,6 @@
+import base64
+import hashlib
+import hmac
 import logging
 import os
 import re
@@ -6,10 +9,12 @@ import config
 from flask import g, request
 from jwkaas import JWKaas
 from requests.exceptions import ConnectionError
+
 from utils import get_secret
 
 my_jwkaas = None
 api_key_secret = None
+api_key_secret_conversion = None
 
 if hasattr(config, "OAUTH_JWKS_URL"):
     my_jwkaas = JWKaas(
@@ -20,6 +25,9 @@ if hasattr(config, "OAUTH_JWKS_URL"):
 
 if hasattr(config, "API_KEY_SECRET"):
     api_key_secret = get_secret(os.environ["PROJECT_ID"], config.API_KEY_SECRET)
+    if hasattr(config, "API_KEY_SECRET_CONVERSION"):
+        if config.API_KEY_SECRET_CONVERSION == "HMAC-SHA-256":
+            api_key_secret_conversion = "HMAC-SHA-256"
 
 
 def refine_token_info(token_info):
@@ -70,10 +78,19 @@ def info_from_apikey(apikey, required_scopes):
         logging.error(
             "API Key authorization configured but API key secret is missing from config."
         )
+    elif api_key_secret_conversion:
+        if api_key_secret_conversion == "HMAC-SHA-256":
+            body = request.data
+            apikeybytes = bytes(apikey, "utf8")
+            correct_api_key = hmac.compare_digest(
+                apikeybytes, computeHash(api_key_secret, body)
+            )
+            if correct_api_key:
+                g.user = "apikeyuser"
+                return {"sub": "apikeyuser"}
     elif apikey == api_key_secret:
         g.user = "apikeyuser"
         return {"sub": "apikeyuser"}
-
     return None
 
 
@@ -88,3 +105,10 @@ def extract_bearer_token(token):
         return re_match.group(1)
 
     return None
+
+
+def computeHash(secret, payload):
+    secretbytes = bytes(secret, "utf8")
+    hashBytes = hmac.new(secretbytes, msg=payload, digestmod=hashlib.sha256).digest()
+    base64Hash = base64.b64encode(hashBytes)
+    return base64Hash
