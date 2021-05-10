@@ -81,9 +81,9 @@ def info_from_apikey(apikey, required_scopes):
         )
     elif api_key_secret_conversion:
         if api_key_secret_conversion == "HMAC-SHA-256":
-            body = request.form.to_dict()
+            body = request.stream.read()
             if not body:
-                logging.info("Requests form was empty, trying requests data")
+                logging.info("Requests stream read was empty, trying requests data")
                 body = request.get_data()
             else:
                 body_str = json.dumps(body)
