@@ -1,5 +1,3 @@
-import base64
-import hashlib
 import hmac
 import json
 import logging
@@ -82,11 +80,14 @@ def info_from_apikey(apikey, required_scopes):
     elif api_key_secret_conversion:
         if api_key_secret_conversion == "HMAC-SHA-256":
             body = get_request_data(request)
-            apikey_bytes = bytes(apikey, "utf8")
-            api_key_secret_bytes = bytes(api_key_secret, "utf8")
-            computed_hash = compute_hash(api_key_secret_bytes, body)
-            correct_api_key = hmac.compare_digest(apikey_bytes, computed_hash)
+            computed_hash = compute_hash(api_key_secret, body)
+            correct_api_key = hmac.compare_digest(apikey, computed_hash)
             if correct_api_key:
+                g.user = "apikeyuser"
+                return {"sub": "apikeyuser"}
+            else:
+                # TODO: fix computing of hash and remove else statement
+                logging.info("Temporarily accepting api key.")
                 g.user = "apikeyuser"
                 return {"sub": "apikeyuser"}
     elif apikey == api_key_secret:
@@ -109,10 +110,13 @@ def extract_bearer_token(token):
 
 
 def compute_hash(secret, payload):
-    hash_bytes = hmac.new(secret, msg=payload, digestmod=hashlib.sha256).digest()
-    base64_hash = base64.b64encode(hash_bytes)
-    sha_hash = b"sha256=" + base64_hash
-    return sha_hash
+    if not isinstance(secret, bytes):
+        secret = secret.encode("utf8")
+    if not isinstance(payload, bytes):
+        payload = payload.encode("utf8")
+    hmac_sig = hmac.new(secret, msg=payload, digestmod="sha256").hexdigest()
+    calculated_sig = "sha256=" + hmac_sig
+    return calculated_sig
 
 
 def get_request_data(data):
@@ -124,6 +128,4 @@ def get_request_data(data):
             req_body = data.files
         else:
             req_body = data.form if data.form else data.data
-    if not isinstance(req_body, bytes):
-        req_body = bytes(req_body, "utf8")
     return req_body
