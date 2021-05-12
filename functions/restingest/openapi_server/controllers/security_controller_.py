@@ -1,3 +1,6 @@
+import hashlib
+import hmac
+import json
 import logging
 import os
 import re
@@ -10,6 +13,7 @@ from utils import get_secret
 
 my_jwkaas = None
 api_key_secret = None
+api_key_secret_conversion = None
 
 if hasattr(config, "OAUTH_JWKS_URL"):
     my_jwkaas = JWKaas(
@@ -20,6 +24,9 @@ if hasattr(config, "OAUTH_JWKS_URL"):
 
 if hasattr(config, "API_KEY_SECRET"):
     api_key_secret = get_secret(os.environ["PROJECT_ID"], config.API_KEY_SECRET)
+
+if hasattr(config, "API_KEY_SECRET_CONVERSION"):
+    api_key_secret_conversion = config.API_KEY_SECRET_CONVERSION
 
 
 def refine_token_info(token_info):
@@ -70,7 +77,7 @@ def info_from_apikey(apikey, required_scopes):
         logging.error(
             "API Key authorization configured but API key secret is missing from config."
         )
-    elif apikey == api_key_secret:
+    elif apikey_conversion_and_validation(api_key_secret_conversion, apikey):
         g.user = "apikeyuser"
         return {"sub": "apikeyuser"}
 
@@ -88,3 +95,37 @@ def extract_bearer_token(token):
         return re_match.group(1)
 
     return None
+
+
+def get_request_body_as_bytes():
+    if request.is_json:
+        req_body = json.dumps(
+            request.get_json(silent=True), separators=(",", ":")
+        )  # Retrieve JSON as minified object
+    else:
+        req_body = request.data
+
+    if not isinstance(req_body, bytes):
+        req_body = bytes(req_body, "utf8")
+
+    return req_body
+
+
+def apikey_conversion_and_validation(conversion, apikey):
+    if not conversion and apikey == api_key_secret:
+        return True
+
+    if conversion == "hmac_sha256":
+        payload = get_request_body_as_bytes()  # Retrieve request data as bytes object
+        secret = api_key_secret.encode()  # Retrieve API Key as bytes object
+
+        # Construct HMAC generator with our secret as key, and SHA-256 as the hashing function
+        signature = hmac.new(key=secret, msg=payload, digestmod=hashlib.sha256)
+
+        # Create the hex digest and append prefix to match the GitHub request format
+        digest = f"sha256={signature.hexdigest()}"
+
+        if hmac.compare_digest(digest, apikey):
+            return True
+
+    return False

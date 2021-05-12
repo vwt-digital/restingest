@@ -29,6 +29,9 @@ class BaseApp:
             current_app.cloudstorage = []
             current_app.cloudlogstorage = []
 
+            if hasattr(config, "API_KEY_SECRET_CONVERSION"):
+                current_app.config["JSON_SORT_KEYS"] = False
+
             compression = (
                 config.COMPRESSION if hasattr(config, "COMPRESSION") else False
             )
