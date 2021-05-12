@@ -8,7 +8,6 @@ import config
 from flask import g, request
 from jwkaas import JWKaas
 from requests.exceptions import ConnectionError
-
 from utils import get_secret
 
 my_jwkaas = None
@@ -82,17 +81,14 @@ def info_from_apikey(apikey, required_scopes):
             body = get_request_data(request)
             computed_hash = compute_hash(api_key_secret, body)
             correct_api_key = hmac.compare_digest(apikey, computed_hash)
+
             if correct_api_key:
-                g.user = "apikeyuser"
-                return {"sub": "apikeyuser"}
-            else:
-                # TODO: fix computing of hash and remove else statement
-                logging.info("Temporarily accepting api key.")
                 g.user = "apikeyuser"
                 return {"sub": "apikeyuser"}
     elif apikey == api_key_secret:
         g.user = "apikeyuser"
         return {"sub": "apikeyuser"}
+
     return None
 
 
