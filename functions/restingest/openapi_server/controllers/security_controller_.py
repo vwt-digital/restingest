@@ -1,5 +1,3 @@
-import hmac
-import json
 import logging
 import os
 import re
@@ -12,7 +10,6 @@ from utils import get_secret
 
 my_jwkaas = None
 api_key_secret = None
-api_key_secret_conversion = None
 
 if hasattr(config, "OAUTH_JWKS_URL"):
     my_jwkaas = JWKaas(
@@ -23,9 +20,6 @@ if hasattr(config, "OAUTH_JWKS_URL"):
 
 if hasattr(config, "API_KEY_SECRET"):
     api_key_secret = get_secret(os.environ["PROJECT_ID"], config.API_KEY_SECRET)
-    if hasattr(config, "API_KEY_SECRET_CONVERSION"):
-        if config.API_KEY_SECRET_CONVERSION == "HMAC-SHA-256":
-            api_key_secret_conversion = "HMAC-SHA-256"
 
 
 def refine_token_info(token_info):
@@ -76,15 +70,6 @@ def info_from_apikey(apikey, required_scopes):
         logging.error(
             "API Key authorization configured but API key secret is missing from config."
         )
-    elif api_key_secret_conversion:
-        if api_key_secret_conversion == "HMAC-SHA-256":
-            body = get_request_data(request)
-            computed_hash = compute_hash(api_key_secret, body)
-            correct_api_key = hmac.compare_digest(apikey, computed_hash)
-
-            if correct_api_key:
-                g.user = "apikeyuser"
-                return {"sub": "apikeyuser"}
     elif apikey == api_key_secret:
         g.user = "apikeyuser"
         return {"sub": "apikeyuser"}
@@ -103,25 +88,3 @@ def extract_bearer_token(token):
         return re_match.group(1)
 
     return None
-
-
-def compute_hash(secret, payload):
-    if not isinstance(secret, bytes):
-        secret = secret.encode("utf8")
-    if not isinstance(payload, bytes):
-        payload = payload.encode("utf8")
-    hmac_sig = hmac.new(secret, msg=payload, digestmod="sha256").hexdigest()
-    calculated_sig = "sha256=" + hmac_sig
-    return calculated_sig
-
-
-def get_request_data(data):
-    if data.is_json:
-        req_body = data.get_json(silent=True)
-        req_body = json.dumps(req_body)
-    else:
-        if data.files:
-            req_body = data.files
-        else:
-            req_body = data.form if data.form else data.data
-    return req_body

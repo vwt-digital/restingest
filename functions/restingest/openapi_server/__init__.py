@@ -2,11 +2,10 @@ import logging
 
 import config
 import connexion
-from flask import current_app
-from flask_cors import CORS
-
 from azurecloudstorage import AzureCloudStorage
+from flask import current_app
 from Flask_AuditLog import AuditLog
+from flask_cors import CORS
 from googlecloudstorage import GoogleCloudStorage
 
 logging.basicConfig(level=logging.INFO)
@@ -23,9 +22,6 @@ class BaseApp:
 
         CORS(self.cxnapp.app)
         with self.cxnapp.app.app_context():
-            if hasattr(config, "API_KEY_SECRET_CONVERSION"):
-                if config.API_KEY_SECRET_CONVERSION == "HMAC-SHA-256":
-                    current_app.config["JSON_SORT_KEYS"] = False
             current_app.__pii_filter_def__ = None
             current_app.schemas = None
             current_app.paths = None
