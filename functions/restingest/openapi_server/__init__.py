@@ -3,12 +3,50 @@ import logging
 import config
 import connexion
 from azurecloudstorage import AzureCloudStorage
+from connexion import decorators
+from connexion.exceptions import BadRequestProblem
+from connexion.utils import is_null
 from flask import current_app
 from Flask_AuditLog import AuditLog
 from flask_cors import CORS
 from googlecloudstorage import GoogleCloudStorage
+from jsonschema import ValidationError
 
 logging.basicConfig(level=logging.INFO)
+
+
+class RequestBodyValidator(decorators.validation.RequestBodyValidator):
+    """
+    This class overrides the default connexion RequestBodyValidator
+    so that it returns the complete string representation of the
+    error, rather than just returning the error message.
+
+    For more information:
+        - https://github.com/zalando/connexion/issues/558
+        - https://connexion.readthedocs.io/en/latest/request.html
+    """
+
+    def validate_schema(self, data, url):
+        if self.is_null_value_valid and is_null(data):
+            return None
+
+        try:
+            self.validator.validate(data)
+        except ValidationError as exception:
+            if hasattr(config, "DEBUG_LOGGING") and config.DEBUG_LOGGING is True:
+                logging.info(
+                    f"{url} validation error: {exception.message}",
+                    extra={"validator": "body"},
+                )
+            else:
+                logging.error(
+                    f"{url} validation error: {exception.message}",
+                    extra={"validator": "body"},
+                )
+
+            raise BadRequestProblem(title="Bad Request", detail=exception.message)
+
+        return None
 
 
 # BaseApp wraps the Connexion app, also exposing the handle_request function to allow calling from
@@ -16,7 +54,11 @@ logging.basicConfig(level=logging.INFO)
 class BaseApp:
     def __init__(self):
         self.cxnapp = connexion.App(__name__, specification_dir="openapi/")
-        self.cxnapp.add_api("openapi.yaml")
+        self.cxnapp.add_api(
+            "openapi.yaml",
+            strict_validation=True,
+            validator_map={"body": RequestBodyValidator},
+        )
 
         AuditLog(self.cxnapp)
 
