@@ -42,5 +42,5 @@ BASE_PATH = "base/path"
 #    }
 
 
-# Uncomment if you want validation errors to show up as info logging and not error logging
+# Uncomment if you want errors to show up as info logging
 # DEBUG_LOGGING = True

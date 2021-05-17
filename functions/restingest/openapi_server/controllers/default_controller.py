@@ -4,6 +4,7 @@ import logging
 import mimetypes
 import uuid
 
+import config
 import requests
 from defusedxml import ElementTree as defusedxml_ET
 from flask import current_app, jsonify, make_response, request
@@ -208,7 +209,11 @@ def generic_post(body):  # noqa: C901
                 ("application/json" in request.mimetype),
             )
         else:
-            raise ValueError("No correct body provided.")
+            if hasattr(config, "DEBUG_LOGGING") and config.DEBUG_LOGGING is True:
+                logging.info("No correct body provided.")
+                return make_response(jsonify(str("No correct body provided.")), 400)
+            else:
+                raise ValueError("No correct body provided.")
 
         return make_response("Created", 201)
     except requests.exceptions.ConnectionError as error:
