@@ -9,6 +9,7 @@ import config
 from flask import g, request
 from jwkaas import JWKaas
 from requests.exceptions import ConnectionError
+
 from utils import get_secret
 
 my_jwkaas = None
@@ -27,6 +28,19 @@ if hasattr(config, "API_KEY_SECRET"):
 
 if hasattr(config, "API_KEY_SECRET_CONVERSION"):
     api_key_secret_conversion = config.API_KEY_SECRET_CONVERSION
+
+
+class LevelRaiser(logging.Filter):
+    def filter(self, record):
+        if record.levelno == logging.WARNING:
+            record.levelno = logging.INFO
+            record.levelname = logging.getLevelName(logging.INFO)
+        return True
+
+
+def configure_library_logging():
+    library_root_logger = logging.getLogger(request.__name__)
+    library_root_logger.addFilter(LevelRaiser())
 
 
 def refine_token_info(token_info):
@@ -48,6 +62,8 @@ def info_from_oauth2(token):
     :return: Decoded token information or None if token is invalid
     :rtype: dict | None
     """
+    if hasattr(config, "DEBUG_LOGGING") and config.DEBUG_LOGGING is True:
+        configure_library_logging()
 
     token_info = get_token_info(token)
 

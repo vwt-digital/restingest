@@ -42,5 +42,5 @@ BASE_PATH = "base/path"
 #    }
 
 
-# Uncomment if you want errors to show up as info logging
+# Uncomment if you want errors and request warnings to show up as info logging
 # DEBUG_LOGGING = True
