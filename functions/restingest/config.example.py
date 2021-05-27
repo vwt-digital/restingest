@@ -7,7 +7,7 @@
 #   GOOGLE_STORAGE_BUCKET = 'storagebucketname'
 
 # Base path of blobs stored
-BASE_PATH = 'base/path'
+BASE_PATH = "base/path"
 
 # Use brotli compression
 # COMPRESSION = True
@@ -40,3 +40,7 @@ BASE_PATH = 'base/path'
 #            }
 #        }
 #    }
+
+
+# Uncomment if you want errors and request warnings to show up as info logging
+# DEBUG_LOGGING = True

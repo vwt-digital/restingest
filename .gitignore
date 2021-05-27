@@ -10,3 +10,4 @@ cov-nosetests-html/
 cov-*.xml
 test-*.xml
 *.pyc
+config.py
