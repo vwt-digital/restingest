@@ -1,8 +1,7 @@
 import json
 import logging
 import os
-from xml.sax.saxutils import \
-    escape  # nosec - Doesn't escape values from external file
+from xml.sax.saxutils import escape  # nosec - Doesn't escape values from external file
 
 import config
 import requests
