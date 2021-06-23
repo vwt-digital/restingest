@@ -346,9 +346,6 @@ def http_receive_store_blob_trigger_func(request):
     for key, value in request.headers:
         cpHeaders[key] = value
 
-    if hasattr(config, "DEBUG_LOGGING") and config.DEBUG_LOGGING is True:
-        logging.info("[DEBUG] %s" % request.data)
-
     try:
         return connexion_app.handle_request(
             url=request.path,
