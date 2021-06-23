@@ -38,6 +38,8 @@ class RequestBodyValidator(decorators.validation.RequestBodyValidator):
                     f"{url} validation error: {exception.message}",
                     extra={"validator": "body"},
                 )
+                logging.info("[DEBUG] Data: %s" % data)
+                logging.info("[DEBUG] Exception: %s" % exception)
             else:
                 logging.error(
                     f"{url} validation error: {exception.message}",
