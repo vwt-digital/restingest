@@ -1,7 +1,8 @@
 import json
 import logging
 import os
-from xml.sax.saxutils import escape  # nosec - Doesn't escape values from external file
+from xml.sax.saxutils import \
+    escape  # nosec - Doesn't escape values from external file
 
 import config
 import requests
@@ -344,6 +345,9 @@ def http_receive_store_blob_trigger_func(request):
     cpHeaders = {}
     for key, value in request.headers:
         cpHeaders[key] = value
+
+    if hasattr(config, "DEBUG_LOGGING") and config.DEBUG_LOGGING is True:
+        logging.debug("Body: %s" % request.data)
 
     try:
         return connexion_app.handle_request(
