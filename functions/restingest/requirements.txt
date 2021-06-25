@@ -98,6 +98,8 @@ idna==2.10
     #   requests
 inflection==0.5.1
     # via connexion
+isodate==0.6.0
+    # via openapi-schema-validator
 itsdangerous==1.1.0
     # via flask
 jinja2==2.11.3
@@ -107,6 +109,7 @@ jinja2==2.11.3
 jsonschema==3.2.0
     # via
     #   connexion
+    #   openapi-schema-validator
     #   openapi-spec-validator
 jwkaas==1.0.1
     # via -r requirements.in
@@ -120,6 +123,8 @@ mypy-extensions==0.4.3
     # via typing-inspect
 oauthlib==3.1.1
     # via requests-oauthlib
+openapi-schema-validator==0.1.5
+    # via -r requirements.in
 openapi-spec-validator==0.2.9
     # via
     #   -r requirements.in
@@ -183,7 +188,9 @@ six==1.16.0
     #   google-cloud-core
     #   google-resumable-media
     #   grpcio
+    #   isodate
     #   jsonschema
+    #   openapi-schema-validator
     #   openapi-spec-validator
     #   protobuf
     #   python-dateutil

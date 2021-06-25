@@ -269,6 +269,7 @@ class E2ETest(unittest.TestCase):
         Positive test with basic configuration
         """
         payload = {"ID": 1}
+        headers = {"Content-Type": "application/json"}
 
         r = requests.post(
             "https://europe-west1-"
@@ -276,7 +277,8 @@ class E2ETest(unittest.TestCase):
             + ".cloudfunctions.net/"
             + self._domain
             + "-receive-ingest-func/store-json",
-            json=payload,
+            data=json.dumps(payload),
+            headers=headers,
         )
 
         try:
@@ -418,7 +420,10 @@ class E2ETest(unittest.TestCase):
         token = requests.post(config.OAUTH_TOKEN_URL, data=oauth_data)
         token_data = token.json()
 
-        headers = {"Authorization": "Bearer " + token_data["access_token"]}
+        headers = {
+            "Authorization": "Bearer " + token_data["access_token"],
+            "Content-Type": "application/json",
+        }
 
         payload = {"ID": 1}
 
@@ -429,7 +434,7 @@ class E2ETest(unittest.TestCase):
             + self._domain
             + "-receive-ingest-func/store-json-oauth",
             headers=headers,
-            json=payload,
+            data=json.dumps(payload),
         )
 
         try:
