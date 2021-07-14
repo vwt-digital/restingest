@@ -57,6 +57,7 @@ class BaseApp:
         self.cxnapp.add_api(
             "openapi.yaml",
             strict_validation=True,
+            validator_map={"body": RequestBodyValidator},
         )
 
         AuditLog(self.cxnapp)
