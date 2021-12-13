@@ -4,7 +4,7 @@ google-cloud-kms==1.4.0
 google-cloud-storage==1.37.0
 google-cloud-secret-manager==2.3.0
 jwkaas==1.0.1
-lxml==4.6.3
+lxml==4.6.5
 connexion==2.7.0
 Werkzeug==1.0.1
 retry==0.9.2
